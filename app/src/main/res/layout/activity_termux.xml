@@ -20,7 +20,7 @@
             android:id="@+id/drawer_layout"
             android:layout_width="match_parent"
             android:layout_alignParentTop="true"
-            android:layout_above="@+id/terminal_toolbar_view_pager"
+            android:layout_above="@+id/terminal_toolbar_container"
             android:layout_height="match_parent">
 
             <com.termux.view.TerminalView
@@ -94,13 +94,31 @@
 
         </androidx.drawerlayout.widget.DrawerLayout>
 
-        <androidx.viewpager.widget.ViewPager
-            android:id="@+id/terminal_toolbar_view_pager"
-            android:visibility="gone"
+        <!-- Bottom toolbar container holding either the swipeable ViewPager (default mode)
+             or the stacked toolbar (terminal-toolbar-stacked=true, inflated lazily from the stub).
+             Exactly one child is visible; the container wraps its height. The DrawerLayout sits
+             above this container so the terminal never overlaps whichever toolbar is shown. -->
+        <FrameLayout
+            android:id="@+id/terminal_toolbar_container"
             android:layout_width="match_parent"
-            android:layout_height="37.5dp"
-            android:background="@color/black"
-            android:layout_alignParentBottom="true" />
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true">
+
+            <androidx.viewpager.widget.ViewPager
+                android:id="@+id/terminal_toolbar_view_pager"
+                android:visibility="gone"
+                android:layout_width="match_parent"
+                android:layout_height="37.5dp"
+                android:background="@color/black" />
+
+            <ViewStub
+                android:id="@+id/terminal_toolbar_stacked_stub"
+                android:inflatedId="@+id/terminal_toolbar_stacked"
+                android:layout="@layout/view_terminal_toolbar_stacked"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+        </FrameLayout>
 
     </RelativeLayout>
 

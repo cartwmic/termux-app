@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Stacked terminal toolbar: extra keys row on top, swipe-typing text input box below,
+     both visible at once. Inflated lazily via ViewStub only when the
+     `terminal-toolbar-stacked` property is enabled, so the ids below never collide
+     with the copies the ViewPager inflates in the default (paged) mode.
+     Child heights are set programmatically in TermuxActivity.setTerminalToolbarHeight(). -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@color/black">
+
+    <include
+        layout="@layout/view_terminal_toolbar_extra_keys"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <include
+        layout="@layout/view_terminal_toolbar_text_input"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+</LinearLayout>

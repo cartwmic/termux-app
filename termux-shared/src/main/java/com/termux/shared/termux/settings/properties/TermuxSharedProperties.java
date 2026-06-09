@@ -658,6 +658,10 @@ public abstract class TermuxSharedProperties {
         return (float) getInternalPropertyValue(TermuxPropertyConstants.KEY_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR, true);
     }
 
+    public boolean isTerminalToolbarStacked() {
+        return (boolean) getInternalPropertyValue(TermuxPropertyConstants.KEY_TERMINAL_TOOLBAR_STACKED, true);
+    }
+
     public boolean isBackKeyTheEscapeKey() {
         return (boolean) TermuxPropertyConstants.IVALUE_BACK_KEY_BEHAVIOUR_ESCAPE.equals(getInternalPropertyValue(TermuxPropertyConstants.KEY_BACK_KEY_BEHAVIOUR, true));
     }

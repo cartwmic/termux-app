@@ -19,6 +19,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewStub;
 import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -127,6 +128,18 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
      * The terminal extra keys view.
      */
     ExtraKeysView mExtraKeysView;
+
+    /**
+     * Whether the terminal toolbar is in stacked mode (extra keys row and text input box both
+     * visible at once) rather than the default swipeable two-page mode. Driven by the
+     * `terminal-toolbar-stacked` property and resolved in {@link #setTerminalToolbarView(Bundle)}.
+     */
+    boolean mTerminalToolbarStacked;
+
+    /**
+     * The text input box of the stacked toolbar, kept for focus checks. Null in paged mode.
+     */
+    EditText mTerminalToolbarStackedTextInput;
 
     /**
      * The client for the {@link #mExtraKeysView}.
@@ -511,40 +524,103 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         mTermuxTerminalExtraKeys = new TermuxTerminalExtraKeys(this, mTerminalView,
             mTermuxTerminalViewClient, mTermuxTerminalSessionActivityClient);
 
-        final ViewPager terminalToolbarViewPager = getTerminalToolbarViewPager();
-        if (mPreferences.shouldShowTerminalToolbar()) terminalToolbarViewPager.setVisibility(View.VISIBLE);
+        mTerminalToolbarStacked = mProperties.isTerminalToolbarStacked();
 
+        final ViewPager terminalToolbarViewPager = getTerminalToolbarViewPager();
+
+        // The per-row height unit is the ViewPager's initial layout height (one extra-keys row).
         ViewGroup.LayoutParams layoutParams = terminalToolbarViewPager.getLayoutParams();
         mTerminalToolbarDefaultHeight = layoutParams.height;
-
-        setTerminalToolbarHeight();
 
         String savedTextInput = null;
         if (savedInstanceState != null)
             savedTextInput = savedInstanceState.getString(ARG_TERMINAL_TOOLBAR_TEXT_INPUT);
 
-        terminalToolbarViewPager.setAdapter(new TerminalToolbarViewPager.PageAdapter(this, savedTextInput));
-        terminalToolbarViewPager.addOnPageChangeListener(new TerminalToolbarViewPager.OnPageChangeListener(this, terminalToolbarViewPager));
+        if (mTerminalToolbarStacked) {
+            setupStackedTerminalToolbar(savedTextInput);
+        } else {
+            if (mPreferences.shouldShowTerminalToolbar()) terminalToolbarViewPager.setVisibility(View.VISIBLE);
+            setTerminalToolbarHeight();
+            terminalToolbarViewPager.setAdapter(new TerminalToolbarViewPager.PageAdapter(this, savedTextInput));
+            terminalToolbarViewPager.addOnPageChangeListener(new TerminalToolbarViewPager.OnPageChangeListener(this, terminalToolbarViewPager));
+        }
+    }
+
+    /** Bind the stacked toolbar: extra keys row and text input box shown simultaneously. */
+    private void setupStackedTerminalToolbar(String savedTextInput) {
+        getTerminalToolbarViewPager().setVisibility(View.GONE);
+
+        final View stacked = getTerminalToolbarStackedView();
+        if (stacked == null) return;
+
+        ExtraKeysView extraKeysView = stacked.findViewById(R.id.terminal_toolbar_extra_keys);
+        TerminalToolbarViewPager.setupExtraKeysView(this, extraKeysView);
+
+        EditText editText = stacked.findViewById(R.id.terminal_toolbar_text_input);
+        TerminalToolbarViewPager.setupTextInputView(this, editText, savedTextInput);
+        mTerminalToolbarStackedTextInput = editText;
+
+        stacked.setVisibility(mPreferences.shouldShowTerminalToolbar() ? View.VISIBLE : View.GONE);
+        setTerminalToolbarHeight();
+
+        // Keep focus (and the soft keyboard) on the terminal by default so keys route to the
+        // terminal until the user explicitly taps the text input box. Without this the
+        // focusableInTouchMode EditText could grab initial focus.
+        getTerminalView().requestFocus();
+    }
+
+    /** Inflate (once) and return the stacked toolbar root, or null if unavailable. */
+    public View getTerminalToolbarStackedView() {
+        View stacked = findViewById(R.id.terminal_toolbar_stacked);
+        if (stacked == null) {
+            ViewStub stub = findViewById(R.id.terminal_toolbar_stacked_stub);
+            if (stub != null) stacked = stub.inflate();
+        }
+        return stacked;
     }
 
     private void setTerminalToolbarHeight() {
+        final int rows = (mTermuxTerminalExtraKeys.getExtraKeysInfo() == null ? 0 : mTermuxTerminalExtraKeys.getExtraKeysInfo().getMatrix().length);
+        final float scale = mProperties.getTerminalToolbarHeightScaleFactor();
+
+        if (mTerminalToolbarStacked) {
+            final View stacked = findViewById(R.id.terminal_toolbar_stacked);
+            if (stacked == null) return;
+
+            final int unit = Math.round(mTerminalToolbarDefaultHeight * scale);
+
+            ExtraKeysView extraKeysView = stacked.findViewById(R.id.terminal_toolbar_extra_keys);
+            ViewGroup.LayoutParams ekLayoutParams = extraKeysView.getLayoutParams();
+            ekLayoutParams.height = unit * rows;
+            extraKeysView.setLayoutParams(ekLayoutParams);
+            // Hide the extra keys row entirely when there are no rows (e.g. extra-keys-style=none),
+            // but still show the text input box below.
+            extraKeysView.setVisibility(rows == 0 ? View.GONE : View.VISIBLE);
+
+            EditText editText = stacked.findViewById(R.id.terminal_toolbar_text_input);
+            ViewGroup.LayoutParams tiLayoutParams = editText.getLayoutParams();
+            tiLayoutParams.height = unit;
+            editText.setLayoutParams(tiLayoutParams);
+            return;
+        }
+
         final ViewPager terminalToolbarViewPager = getTerminalToolbarViewPager();
         if (terminalToolbarViewPager == null) return;
 
         ViewGroup.LayoutParams layoutParams = terminalToolbarViewPager.getLayoutParams();
-        layoutParams.height = Math.round(mTerminalToolbarDefaultHeight *
-            (mTermuxTerminalExtraKeys.getExtraKeysInfo() == null ? 0 : mTermuxTerminalExtraKeys.getExtraKeysInfo().getMatrix().length) *
-            mProperties.getTerminalToolbarHeightScaleFactor());
+        layoutParams.height = Math.round(mTerminalToolbarDefaultHeight * rows * scale);
         terminalToolbarViewPager.setLayoutParams(layoutParams);
     }
 
     public void toggleTerminalToolbar() {
-        final ViewPager terminalToolbarViewPager = getTerminalToolbarViewPager();
-        if (terminalToolbarViewPager == null) return;
+        final View toolbar = mTerminalToolbarStacked
+            ? findViewById(R.id.terminal_toolbar_stacked)
+            : getTerminalToolbarViewPager();
+        if (toolbar == null) return;
 
         final boolean showNow = mPreferences.toogleShowTerminalToolbar();
         Logger.showToast(this, (showNow ? getString(R.string.msg_enabling_terminal_toolbar) : getString(R.string.msg_disabling_terminal_toolbar)), true);
-        terminalToolbarViewPager.setVisibility(showNow ? View.VISIBLE : View.GONE);
+        toolbar.setVisibility(showNow ? View.VISIBLE : View.GONE);
         if (showNow && isTerminalToolbarTextInputViewSelected()) {
             // Focus the text input view if just revealed.
             findViewById(R.id.terminal_toolbar_text_input).requestFocus();
@@ -847,10 +923,14 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     }
 
     public boolean isTerminalViewSelected() {
+        if (mTerminalToolbarStacked)
+            return mTerminalToolbarStackedTextInput == null || !mTerminalToolbarStackedTextInput.hasFocus();
         return getTerminalToolbarViewPager().getCurrentItem() == 0;
     }
 
     public boolean isTerminalToolbarTextInputViewSelected() {
+        if (mTerminalToolbarStacked)
+            return mTerminalToolbarStackedTextInput != null && mTerminalToolbarStackedTextInput.hasFocus();
         return getTerminalToolbarViewPager().getCurrentItem() == 1;
     }
 

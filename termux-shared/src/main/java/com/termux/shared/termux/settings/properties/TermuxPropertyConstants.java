@@ -268,6 +268,13 @@ public final class TermuxPropertyConstants {
 
 
 
+    /** Defines the key for whether the terminal toolbar shows the extra keys row and the text input
+     * box stacked together (both visible) instead of as two swipeable pages. */
+    public static final String KEY_TERMINAL_TOOLBAR_STACKED = "terminal-toolbar-stacked"; // Default: "terminal-toolbar-stacked"
+    public static final boolean DEFAULT_VALUE_TERMINAL_TOOLBAR_STACKED = false;
+
+
+
 
     /* Integer */
 
@@ -400,6 +407,7 @@ public final class TermuxPropertyConstants {
         KEY_HIDE_SOFT_KEYBOARD_ON_STARTUP,
         KEY_RUN_TERMUX_AM_SOCKET_SERVER,
         KEY_TERMINAL_ONCLICK_URL_OPEN,
+        KEY_TERMINAL_TOOLBAR_STACKED,
         KEY_USE_CTRL_SPACE_WORKAROUND,
         KEY_USE_FULLSCREEN,
         KEY_USE_FULLSCREEN_WORKAROUND,
@@ -446,6 +454,7 @@ public final class TermuxPropertyConstants {
         KEY_ENFORCE_CHAR_BASED_INPUT,
         KEY_HIDE_SOFT_KEYBOARD_ON_STARTUP,
         KEY_TERMINAL_ONCLICK_URL_OPEN,
+        KEY_TERMINAL_TOOLBAR_STACKED,
         KEY_USE_CTRL_SPACE_WORKAROUND,
         KEY_USE_FULLSCREEN,
         KEY_USE_FULLSCREEN_WORKAROUND,

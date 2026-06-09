@@ -43,41 +43,12 @@ public class TerminalToolbarViewPager {
             View layout;
             if (position == 0) {
                 layout = inflater.inflate(R.layout.view_terminal_toolbar_extra_keys, collection, false);
-                ExtraKeysView extraKeysView = (ExtraKeysView) layout;
-                extraKeysView.setExtraKeysViewClient(mActivity.getTermuxTerminalExtraKeys());
-                extraKeysView.setButtonTextAllCaps(mActivity.getProperties().shouldExtraKeysTextBeAllCaps());
-                mActivity.setExtraKeysView(extraKeysView);
-                extraKeysView.reload(mActivity.getTermuxTerminalExtraKeys().getExtraKeysInfo(),
-                    mActivity.getTerminalToolbarDefaultHeight());
-
-                // apply extra keys fix if enabled in prefs
-                if (mActivity.getProperties().isUsingFullScreen() && mActivity.getProperties().isUsingFullScreenWorkAround()) {
-                    FullScreenWorkAround.apply(mActivity);
-                }
-
+                setupExtraKeysView(mActivity, (ExtraKeysView) layout);
             } else {
                 layout = inflater.inflate(R.layout.view_terminal_toolbar_text_input, collection, false);
                 final EditText editText = layout.findViewById(R.id.terminal_toolbar_text_input);
-
-                if (mSavedTextInput != null) {
-                    editText.setText(mSavedTextInput);
-                    mSavedTextInput = null;
-                }
-
-                editText.setOnEditorActionListener((v, actionId, event) -> {
-                    TerminalSession session = mActivity.getCurrentSession();
-                    if (session != null) {
-                        if (session.isRunning()) {
-                            String textToSend = editText.getText().toString();
-                            if (textToSend.length() == 0) textToSend = "\r";
-                            session.write(textToSend);
-                        } else {
-                            mActivity.getTermuxTerminalSessionClient().removeFinishedSession(session);
-                        }
-                        editText.setText("");
-                    }
-                    return true;
-                });
+                setupTextInputView(mActivity, editText, mSavedTextInput);
+                mSavedTextInput = null;
             }
             collection.addView(layout);
             return layout;
@@ -88,6 +59,48 @@ public class TerminalToolbarViewPager {
             collection.removeView((View) view);
         }
 
+    }
+
+    /**
+     * Wire up an {@link ExtraKeysView} (from either the ViewPager page or the stacked toolbar).
+     * Sets the client, all-caps style, registers it with the activity and reloads the keys.
+     */
+    public static void setupExtraKeysView(TermuxActivity activity, ExtraKeysView extraKeysView) {
+        extraKeysView.setExtraKeysViewClient(activity.getTermuxTerminalExtraKeys());
+        extraKeysView.setButtonTextAllCaps(activity.getProperties().shouldExtraKeysTextBeAllCaps());
+        activity.setExtraKeysView(extraKeysView);
+        extraKeysView.reload(activity.getTermuxTerminalExtraKeys().getExtraKeysInfo(),
+            activity.getTerminalToolbarDefaultHeight());
+
+        // apply extra keys fix if enabled in prefs
+        if (activity.getProperties().isUsingFullScreen() && activity.getProperties().isUsingFullScreenWorkAround()) {
+            FullScreenWorkAround.apply(activity);
+        }
+    }
+
+    /**
+     * Wire up the text-input {@link EditText} (from either the ViewPager page or the stacked
+     * toolbar). Restores any saved text and sends the text to the session on the editor action.
+     */
+    public static void setupTextInputView(TermuxActivity activity, final EditText editText, String savedTextInput) {
+        if (savedTextInput != null) {
+            editText.setText(savedTextInput);
+        }
+
+        editText.setOnEditorActionListener((v, actionId, event) -> {
+            TerminalSession session = activity.getCurrentSession();
+            if (session != null) {
+                if (session.isRunning()) {
+                    String textToSend = editText.getText().toString();
+                    if (textToSend.length() == 0) textToSend = "\r";
+                    session.write(textToSend);
+                } else {
+                    activity.getTermuxTerminalSessionClient().removeFinishedSession(session);
+                }
+                editText.setText("");
+            }
+            return true;
+        });
     }
 
 
