@@ -43,7 +43,7 @@ android {
     defaultConfig {
         minSdkVersion project.properties.minSdkVersion.toInteger()
         targetSdkVersion project.properties.targetSdkVersion.toInteger()
-        versionCode 118
+        versionCode 1003
         versionName "0.118.0"
 
         if (appVersionName) versionName = appVersionName
@@ -84,6 +84,18 @@ android {
             storePassword 'xrj45yWGLbsO7W0v'
             keyPassword 'xrj45yWGLbsO7W0v'
         }
+        // Custom fork release key. Secrets are read from the environment so they
+        // never land in the repo. Populate via 1Password at build time:
+        //   TERMUX_KEYSTORE, TERMUX_KEYSTORE_PASSWORD, TERMUX_KEY_ALIAS, TERMUX_KEY_PASSWORD
+        release {
+            def ksPath = System.getenv("TERMUX_KEYSTORE")
+            if (ksPath) {
+                storeFile file(ksPath)
+                storePassword System.getenv("TERMUX_KEYSTORE_PASSWORD")
+                keyAlias System.getenv("TERMUX_KEY_ALIAS") ?: "termux"
+                keyPassword System.getenv("TERMUX_KEY_PASSWORD") ?: System.getenv("TERMUX_KEYSTORE_PASSWORD")
+            }
+        }
     }
 
     buildTypes {
@@ -91,6 +103,7 @@ android {
             minifyEnabled true
             shrinkResources false // Reproducible builds
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            if (System.getenv("TERMUX_KEYSTORE")) signingConfig signingConfigs.release
         }
 
         debug {
