@@ -2,19 +2,19 @@
 
 ### Requirement: Stacked toolbar property
 
-The system SHALL provide a `terminal-toolbar-stacked` boolean property in `termux.properties` that selects how the terminal toolbar presents its extra-keys row and text-input box. The property SHALL default to `false`. When `false`, the toolbar SHALL behave exactly as the legacy two-page swipeable `ViewPager`. When `true`, the toolbar SHALL present both components stacked vertically and simultaneously visible.
+The system SHALL provide a `terminal-toolbar-stacked` boolean property in `termux.properties` that selects how the terminal toolbar presents its extra-keys row and text-input box. The property SHALL default to `true`. When `true`, the toolbar SHALL present both components stacked vertically and simultaneously visible. When `false`, the toolbar SHALL behave exactly as the legacy two-page swipeable `ViewPager`.
 
-#### Scenario: Property absent uses legacy paged toolbar
+#### Scenario: Property absent uses stacked toolbar
 - **WHEN** `terminal-toolbar-stacked` is not set in `termux.properties`
-- **THEN** the toolbar presents a single swipeable view showing either the extra-keys row or the text-input box, one at a time, identical to prior behavior
+- **THEN** the toolbar shows the extra-keys row and the text-input box at the same time, stacked vertically (the fork default)
 
-#### Scenario: Property enabled selects stacked toolbar
-- **WHEN** `terminal-toolbar-stacked = true` is set and settings are reloaded
-- **THEN** the toolbar shows the extra-keys row and the text-input box at the same time, stacked vertically
+#### Scenario: Property disabled restores legacy paged toolbar
+- **WHEN** `terminal-toolbar-stacked = false` is set
+- **THEN** the toolbar presents a single swipeable view showing either the extra-keys row or the text-input box, one at a time, identical to prior upstream behavior
 
-#### Scenario: Property toggled off restores legacy toolbar
-- **WHEN** `terminal-toolbar-stacked` is changed from `true` to `false` and settings are reloaded
-- **THEN** the toolbar reverts to the swipeable two-page presentation with no residual stacked layout
+#### Scenario: Property change applies on settings reload
+- **WHEN** `terminal-toolbar-stacked` is changed and settings are reloaded via `termux-reload-settings`
+- **THEN** the activity is recreated so the new mode (stacked or paged) takes effect without a manual cold restart, with no residual layout from the previous mode
 
 ### Requirement: Simultaneous extra-keys and text-input in stacked mode
 
