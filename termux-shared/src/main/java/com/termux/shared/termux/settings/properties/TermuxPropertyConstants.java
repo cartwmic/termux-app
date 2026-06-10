@@ -271,7 +271,7 @@ public final class TermuxPropertyConstants {
     /** Defines the key for whether the terminal toolbar shows the extra keys row and the text input
      * box stacked together (both visible) instead of as two swipeable pages. */
     public static final String KEY_TERMINAL_TOOLBAR_STACKED = "terminal-toolbar-stacked"; // Default: "terminal-toolbar-stacked"
-    public static final boolean DEFAULT_VALUE_TERMINAL_TOOLBAR_STACKED = false;
+    public static final boolean DEFAULT_VALUE_TERMINAL_TOOLBAR_STACKED = true;
 
 
 
@@ -454,7 +454,6 @@ public final class TermuxPropertyConstants {
         KEY_ENFORCE_CHAR_BASED_INPUT,
         KEY_HIDE_SOFT_KEYBOARD_ON_STARTUP,
         KEY_TERMINAL_ONCLICK_URL_OPEN,
-        KEY_TERMINAL_TOOLBAR_STACKED,
         KEY_USE_CTRL_SPACE_WORKAROUND,
         KEY_USE_FULLSCREEN,
         KEY_USE_FULLSCREEN_WORKAROUND,
@@ -468,7 +467,8 @@ public final class TermuxPropertyConstants {
      */
     public static final Set<String> TERMUX_DEFAULT_TRUE_BOOLEAN_BEHAVIOUR_PROPERTIES_LIST = new HashSet<>(Arrays.asList(
         KEY_EXTRA_KEYS_TEXT_ALL_CAPS,
-        KEY_RUN_TERMUX_AM_SOCKET_SERVER
+        KEY_RUN_TERMUX_AM_SOCKET_SERVER,
+        KEY_TERMINAL_TOOLBAR_STACKED
     ));
 
     /** Defines the set for keys loaded by termux that have default inverted boolean behaviour with false as default.

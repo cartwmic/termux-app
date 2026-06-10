@@ -1049,6 +1049,12 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         if (mProperties != null) {
             reloadProperties();
 
+            // The paged-vs-stacked toolbar structure is only built in onCreate via
+            // setTerminalToolbarView(). If the terminal-toolbar-stacked property changed,
+            // the activity must be recreated for the new mode to take effect on reload.
+            if (mProperties.isTerminalToolbarStacked() != mTerminalToolbarStacked)
+                recreateActivity = true;
+
             if (mExtraKeysView != null) {
                 mExtraKeysView.setButtonTextAllCaps(mProperties.shouldExtraKeysTextBeAllCaps());
                 mExtraKeysView.reload(mTermuxTerminalExtraKeys.getExtraKeysInfo(), mTerminalToolbarDefaultHeight);
