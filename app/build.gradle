@@ -104,6 +104,8 @@ android {
             shrinkResources false // Reproducible builds
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             if (System.getenv("TERMUX_KEYSTORE")) signingConfig signingConfigs.release
+            // Off by default. Set TERMUX_DEBUGGABLE=1 only for one-off adb data restore.
+            if (System.getenv("TERMUX_DEBUGGABLE") == "1") debuggable true
         }
 
         debug {
