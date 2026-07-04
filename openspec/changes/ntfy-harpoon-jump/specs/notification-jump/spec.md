@@ -4,9 +4,7 @@
 
 ### Requirement: Notification Jump Deep Link
 
-WHEN a `termux://zellij-jump/<pane-id>` VIEW intent is delivered to the Termux
-activity, THE app SHALL foreground the terminal activity AND dispatch the
-configured jump command in the background, passing the `<pane-id>` verbatim.
+WHEN a `termux://zellij-jump/<pane-id>` VIEW intent is delivered, THE app SHALL foreground the terminal activity and dispatch the configured jump command in the background with the `<pane-id>` value passed verbatim.
 
 #### Scenario: Tapping a jump notification
 - **WHEN** a `termux://zellij-jump/terminal_7` VIEW intent is delivered
@@ -39,10 +37,7 @@ remains the foregrounded session.
 
 ### Requirement: Running-Activity Re-delivery
 
-WHILE `TermuxActivity` is already running, WHEN a `termux://zellij-jump/<pane-id>`
-intent arrives, THE app SHALL handle it via the running instance (single-task
-re-delivery) rather than creating a second activity instance, preserving the
-single live session.
+WHILE `TermuxActivity` is already running, THE app SHALL handle an arriving `termux://zellij-jump/<pane-id>` intent via the running instance (single-task re-delivery) rather than creating a second activity instance, preserving the single live session.
 
 #### Scenario: Jump while Termux already open
 - **WHILE** `TermuxActivity` is already the running foreground/background task
