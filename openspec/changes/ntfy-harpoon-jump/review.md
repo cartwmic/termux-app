@@ -40,8 +40,8 @@ review_models: [claude-bridge/claude-opus-4-8, openai-codex/gpt-5.5]
 
 ## Diff Base + Worktree locator
 
-**Diff Base SHA:** <empty until apply captures it>
-**Worktree Path:** <empty until apply captures it>
+**Diff Base SHA:** 539b50b8c5d713156bded49ebcc8639297306694
+**Worktree Path:** /Volumes/Workshop/git/termux-app--opsx-ntfy-harpoon-jump
 **Integration Branch:** master
 
 ## Manual Adjustments
@@ -58,6 +58,7 @@ review_models: [claude-bridge/claude-opus-4-8, openai-codex/gpt-5.5]
 ## Execution Notes
 
 - 2026-07-04 — review.md authored; loop start. Scale M / full_rigor false.
+- 2026-07-04 — apply: worktree opsx/ntfy-harpoon-jump created, Diff Base 539b50b8. Implemented manifest deep link + ZellijJumpHandler + onNewIntent wiring + unit test. TermuxActivity already launchMode=singleTask (re-delivery requirement pre-satisfied).
 
 ## Scope Expansions
 

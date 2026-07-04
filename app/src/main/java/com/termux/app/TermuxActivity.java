@@ -290,6 +290,21 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         // Send the {@link TermuxConstants#BROADCAST_TERMUX_OPENED} broadcast to notify apps that Termux
         // app has been opened.
         TermuxUtils.sendTermuxOpenedBroadcast(this);
+
+        // notification-jump: handle a termux://zellij-jump/<pane-id> deep link
+        // delivered on a fresh launch. Foregrounding is inherent (this activity is
+        // being brought up); the handler dispatches the background jump command.
+        ZellijJumpHandler.handle(this, getIntent());
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        // notification-jump: an already-running (singleTask) activity receives the
+        // deep link here rather than spawning a second instance. Preserve the
+        // single live session and dispatch the background jump.
+        setIntent(intent);
+        ZellijJumpHandler.handle(this, intent);
     }
 
     @Override
