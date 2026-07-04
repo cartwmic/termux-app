@@ -1,0 +1,15 @@
+# opsx-gates.yaml — validation gates for the termux-app fork.
+# opsx gate runs each command by exit code: required:true non-zero = GATE-FAIL,
+# required:false non-zero = warning. Commands run with cwd = the located
+# implementation worktree and OPSX_CHANGE / OPSX_CHANGE_DIR / OPSX_WORKTREE /
+# OPSX_DIFF_BASE / OPSX_HEAD exported.
+gates:
+  - id: openspec-validate
+    run: openspec validate --changes --strict
+    required: true
+  # Android build is heavy and needs the SDK/keystore; keep it a warning so the
+  # gate does not block when the toolchain/keystore is unavailable in CI.
+  # Release signing MUST use ~/keys/termux-fork.jks (sharedUserId=com.termux).
+  - id: gradle-assemble-debug
+    run: ./gradlew :app:assembleDebug
+    required: false
