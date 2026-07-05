@@ -6,7 +6,7 @@ import android.net.Uri;
 
 import com.termux.shared.logger.Logger;
 import com.termux.shared.termux.TermuxConstants;
-import com.termux.shared.termux.TermuxConstants.TERMUX_APP.RUN_COMMAND_SERVICE;
+import com.termux.shared.termux.TermuxConstants.TERMUX_APP.TERMUX_SERVICE;
 
 import java.io.File;
 
@@ -84,13 +84,17 @@ public final class ZellijJumpHandler {
         }
 
         try {
-            Intent run = new Intent(context, RunCommandService.class);
-            run.setAction(RUN_COMMAND_SERVICE.ACTION_RUN_COMMAND);
-            run.putExtra(RUN_COMMAND_SERVICE.EXTRA_COMMAND_PATH, JUMP_SCRIPT_PATH);
-            run.putExtra(RUN_COMMAND_SERVICE.EXTRA_ARGUMENTS, new String[]{paneId});
-            // Background execution => Runner.APP_SHELL, no new visible terminal session.
-            run.putExtra(RUN_COMMAND_SERVICE.EXTRA_BACKGROUND, true);
-            context.startService(run);
+            // Dispatch directly to TermuxService via ACTION_SERVICE_EXECUTE (the
+            // internal execution path). Routing through RunCommandService would
+            // subject this in-app dispatch to the "allow-external-apps" policy and
+            // silently no-op by default. Background execution => Runner.APP_SHELL,
+            // so no new visible terminal session is created.
+            Uri executableUri = new Uri.Builder().scheme("file").path(JUMP_SCRIPT_PATH).build();
+            Intent exec = new Intent(TERMUX_SERVICE.ACTION_SERVICE_EXECUTE, executableUri);
+            exec.setClass(context, TermuxService.class);
+            exec.putExtra(TERMUX_SERVICE.EXTRA_ARGUMENTS, new String[]{paneId});
+            exec.putExtra(TERMUX_SERVICE.EXTRA_BACKGROUND, true);
+            context.startService(exec);
             Logger.logDebug(LOG_TAG, "zellij-jump dispatched for pane " + paneId);
         } catch (Exception e) {
             Logger.logStackTraceWithMessage(LOG_TAG, "zellij-jump dispatch failed", e);
