@@ -5,6 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:imeOptions="actionSend|flagNoFullscreen"
+    android:drawableEnd="@drawable/ic_history"
+    android:drawablePadding="8dp"
     android:maxLines="1"
     android:inputType="text"
     android:importantForAutofill="no"

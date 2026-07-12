@@ -1,8 +1,10 @@
 package com.termux.app.terminal.io;
 
+import android.graphics.drawable.Drawable;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -114,6 +116,37 @@ public class TerminalToolbarViewPager {
         });
 
         setupHistoryCycling(editText);
+        setupHistoryPickerIcon(activity, editText);
+    }
+
+    /**
+     * Wire the history icon rendered as the EditText's end compound drawable
+     * (spec terminal-toolbar.history-picker-affordance). Taps landing inside
+     * the icon's touch region open the picker sheet; all other touches fall
+     * through untouched, so stock long-press/text-selection behavior and the
+     * view id are unchanged. The icon lives in the shared layout, so it is
+     * present in both toolbar modes and regardless of history emptiness.
+     */
+    private static void setupHistoryPickerIcon(final TermuxActivity activity, final EditText editText) {
+        editText.setOnTouchListener((v, event) -> {
+            Drawable endDrawable = editText.getCompoundDrawablesRelative()[2];
+            if (endDrawable == null) return false;
+            int touchRegionWidth = endDrawable.getBounds().width()
+                + editText.getPaddingEnd() + editText.getCompoundDrawablePadding();
+            boolean rtl = editText.getLayoutDirection() == View.LAYOUT_DIRECTION_RTL;
+            boolean inIconRegion = rtl
+                ? event.getX() <= touchRegionWidth
+                : event.getX() >= editText.getWidth() - touchRegionWidth;
+            if (!inIconRegion) return false;
+            if (event.getAction() == MotionEvent.ACTION_UP) {
+                v.performClick();
+                TextInputHistorySheet.show(activity, editText);
+            }
+            // Consume DOWN/UP inside the icon region so the tap neither moves
+            // the cursor nor starts a long-press under the icon.
+            return event.getAction() == MotionEvent.ACTION_DOWN
+                || event.getAction() == MotionEvent.ACTION_UP;
+        });
     }
 
     /**

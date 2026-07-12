@@ -29,14 +29,14 @@
 
 ## 3. History picker UI (icon + bottom sheet)
 
-- [ ] 3.1 Add the history icon as `drawableEnd` on the text-input `EditText` with a touch-region handler that opens the picker; view id `terminal_toolbar_text_input` and long-press/selection behavior unchanged; icon present in both toolbar modes and when history is empty (AC terminal-toolbar.history-picker-affordance).
+- [x] 3.1 Add the history icon as `drawableEnd` on the text-input `EditText` with a touch-region handler that opens the picker; view id `terminal_toolbar_text_input` and long-press/selection behavior unchanged; icon present in both toolbar modes and when history is empty (AC terminal-toolbar.history-picker-affordance).
   - intent: feature
   - files_allowed:
       - app/src/main/java/com/termux/app/terminal/io/TerminalToolbarViewPager.java
       - app/src/main/res/layout/view_terminal_toolbar_text_input.xml
       - app/src/main/res/drawable/ic_history.xml
   - allow_new_files: true
-- [ ] 3.2 Build the bottom-sheet picker (`BottomSheetDialog`, Material already a dependency): layout with search field + entry list + clear-all footer; search seeded from box text, owns IME focus, live fuzzy filter with highlighted matches and dim relative timestamps, most-recent-first score-then-recency order; tap → replace box contents (cursor at end), dismiss, refocus box + IME; long-press row → immediate delete; clear-all → empty; "no history yet" and "no matches" states; sheet resizes so the list stays visible above the keyboard; dismiss-without-pick leaves the box untouched (ACs terminal-toolbar.history-picker-search-and-selection, terminal-toolbar.history-entry-deletion-and-clearing, terminal-toolbar.history-picker-affordance).
+- [x] 3.2 Build the bottom-sheet picker (`BottomSheetDialog`, Material already a dependency): layout with search field + entry list + clear-all footer; search seeded from box text, owns IME focus, live fuzzy filter with highlighted matches and dim relative timestamps, most-recent-first score-then-recency order; tap → replace box contents (cursor at end), dismiss, refocus box + IME; long-press row → immediate delete; clear-all → empty; "no history yet" and "no matches" states; sheet resizes so the list stays visible above the keyboard; dismiss-without-pick leaves the box untouched (ACs terminal-toolbar.history-picker-search-and-selection, terminal-toolbar.history-entry-deletion-and-clearing, terminal-toolbar.history-picker-affordance).
   - intent: feature
   - files_allowed:
       - app/src/main/java/com/termux/app/terminal/io/TextInputHistorySheet.java
