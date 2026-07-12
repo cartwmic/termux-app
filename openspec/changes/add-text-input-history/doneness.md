@@ -7,7 +7,10 @@
 **Frozen-Intent SHA:** 73b069dc16b22ac5dd163728cc3349f3cd4d70d6a2e148d8f23b04cdcc9a7b0f
 **Attested HEAD:** da42631b28069884b6d72d0968c296e93f9f950e (judge-attested at dispatch; plain-M combined-channel — not gate-read, reviewer attestation bound via code-review.md)
 **Diff Base SHA:** 70a67e65e8ec7eb2b6685bdde2e5cdc1789c18e7
-**Reviewed Range:** 70a67e65e8ec7eb2b6685bdde2e5cdc1789c18e7..2d9e0d8e7228094173fcb938f9c508b964f2c569
+**Reviewed Range:** 70a67e65e8ec7eb2b6685bdde2e5cdc1789c18e7..daf3ab0a892b2fb91cb8118e59ccd6a25e06977d
+<!-- Re-attestation bookkeeping (landing): rebased onto master per archive-check
+remedy; reviewed tree byte-identical (judge-attested tree carries over from
+2d9e0d8e7228094173fcb938f9c508b964f2c569 / judge-run HEAD da42631b). -->
 
 ## Verdict rationale
 

@@ -5,8 +5,16 @@
 **review_mode:** disclosure-consensus
 **reviewer-provenance:** subagent reviewer (openai-codex/gpt-5.6-sol); subagent reviewer (claude-bridge/claude-fable-5) — rounds 1–4 parallel blind dispatch, round 5 disclosure-consensus consolidating both distinct reviewer models; cwd = worktree
 **Diff Base SHA:** 70a67e65e8ec7eb2b6685bdde2e5cdc1789c18e7
-**Reviewed Range:** 70a67e65e8ec7eb2b6685bdde2e5cdc1789c18e7..2d9e0d8e7228094173fcb938f9c508b964f2c569
-**Attested HEAD:** 2d9e0d8e7228094173fcb938f9c508b964f2c569
+**Reviewed Range:** 70a67e65e8ec7eb2b6685bdde2e5cdc1789c18e7..daf3ab0a892b2fb91cb8118e59ccd6a25e06977d
+**Attested HEAD:** daf3ab0a892b2fb91cb8118e59ccd6a25e06977d
+<!-- Re-attestation bookkeeping (landing): archive-check required rebasing
+opsx/add-text-input-history onto master HEAD fda7c0e2 (which had advanced only by
+this change's own locator/ledger-seal commits). Rebase was conflict-free; duplicate
+ledger commits were patch-id-skipped; the reviewed tree is byte-identical —
+`git diff 2d9e0d8e..daf3ab0a892b -- app/` is empty and the only non-verdict delta is
+review.md's locator block. Reviewer-attested tree identity therefore carries over
+verbatim from original attested HEAD 2d9e0d8e7228094173fcb938f9c508b964f2c569
+(preserved in the round tracker below); header fields re-bound to the rebased tip. -->
 **Baseline:** intent.md (554c80c5) + proposal + specs/terminal-toolbar delta + plan + tasks (all committed, integration branch master); design.md absent (decision-gated skip recorded in proposal)
 **Generated:** 2026-07-11
 
