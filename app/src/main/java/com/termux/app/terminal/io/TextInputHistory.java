@@ -64,12 +64,15 @@ public final class TextInputHistory {
         }
     }
 
-    /** Remove the given entry (matched by text + timestamp), if present. */
+    /**
+     * Remove exactly the given entry, matched by object identity — snapshots
+     * hand out the stored {@link Entry} references, so identity uniquely names
+     * one row even when duplicate texts share a same-millisecond timestamp.
+     */
     public synchronized void delete(Entry entry) {
         if (entry == null) return;
         for (int i = 0; i < mEntries.size(); i++) {
-            Entry e = mEntries.get(i);
-            if (e.text.equals(entry.text) && e.timestamp == entry.timestamp) {
+            if (mEntries.get(i) == entry) {
                 mEntries.remove(i);
                 return;
             }

@@ -159,6 +159,10 @@ public class TerminalToolbarViewPager {
                 < android.view.ViewConfiguration.getLongPressTimeout();
             if (downInIconRegion[0] && inIconRegion && shortTap) {
                 downInIconRegion[0] = false;
+                // The unconsumed DOWN armed the EditText's pending long-press
+                // check; cancel it so a tap held near the timeout cannot fire
+                // the stock menu concurrently with the sheet opening.
+                editText.cancelLongPress();
                 v.performClick();
                 TextInputHistorySheet.show(activity, editText);
                 return true;

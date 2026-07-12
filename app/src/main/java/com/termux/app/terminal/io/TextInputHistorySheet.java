@@ -177,10 +177,14 @@ public final class TextInputHistorySheet {
         // Focus and the soft keyboard return to the box on any dismissal;
         // without a pick the box contents are untouched.
         dialog.setOnDismissListener(d -> {
-            targetBox.requestFocus();
-            InputMethodManager imm =
-                (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
-            if (imm != null) imm.showSoftInput(targetBox, InputMethodManager.SHOW_IMPLICIT);
+            // Post so the activity window regains focus before the IME request;
+            // showSoftInput can silently no-op while the window is unfocused.
+            targetBox.post(() -> {
+                targetBox.requestFocus();
+                InputMethodManager imm =
+                    (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+                if (imm != null) imm.showSoftInput(targetBox, InputMethodManager.SHOW_IMPLICIT);
+            });
         });
 
         refresh.run();

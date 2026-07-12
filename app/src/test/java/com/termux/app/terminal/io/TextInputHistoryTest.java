@@ -110,6 +110,27 @@ public class TextInputHistoryTest {
         Assert.assertEquals(1, history.snapshot().size());
     }
 
+    /**
+     * AC terminal-toolbar.history-entry-deletion-and-clearing: delete removes
+     * exactly the pressed row — identity-matched, so same-text duplicates
+     * (even with identical millisecond timestamps) are distinguished.
+     */
+    @Test
+    public void testDeleteDistinguishesSameTextDuplicates() {
+        TextInputHistory history = TextInputHistory.getInstance();
+        history.record("git status");
+        history.record("make test");
+        history.record("git status"); // non-consecutive duplicate, possibly same-ms timestamp
+
+        TextInputHistory.Entry olderDuplicate = history.snapshot().get(2);
+        history.delete(olderDuplicate);
+
+        List<TextInputHistory.Entry> snapshot = history.snapshot();
+        Assert.assertEquals(2, snapshot.size());
+        Assert.assertEquals("newer duplicate must survive", "git status", snapshot.get(0).text);
+        Assert.assertEquals("make test", snapshot.get(1).text);
+    }
+
     /** AC terminal-toolbar.history-entry-deletion-and-clearing: clear removes all entries. */
     @Test
     public void testClearEmptiesHistory() {
