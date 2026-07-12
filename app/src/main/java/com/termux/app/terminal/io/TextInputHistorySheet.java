@@ -192,13 +192,18 @@ public final class TextInputHistorySheet {
         searchField.requestFocus();
     }
 
-    /** Bold the matched character indices for fuzzy-match highlighting. */
+    /**
+     * Bold the matched code points for fuzzy-match highlighting. Each index is
+     * the UTF-16 start of a matched code point; the span covers its full char
+     * count so supplementary-plane characters are highlighted whole.
+     */
     private static CharSequence highlight(String text, int[] matchedIndices) {
         if (matchedIndices.length == 0) return text;
         SpannableString spannable = new SpannableString(text);
         for (int index : matchedIndices) {
             if (index < 0 || index >= text.length()) continue;
-            spannable.setSpan(new StyleSpan(Typeface.BOLD), index, index + 1,
+            int end = index + Character.charCount(text.codePointAt(index));
+            spannable.setSpan(new StyleSpan(Typeface.BOLD), index, end,
                 Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
         return spannable;

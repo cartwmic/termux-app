@@ -48,16 +48,20 @@ public final class TextInputHistoryMatcher {
 
         List<Integer> indices = new ArrayList<>(query.length());
         int score = 0;
-        int prevIndex = -2;
+        int prevIndex = -2;      // UTF-16 start index of the previous matched code point
+        int prevCharCount = 0;   // its UTF-16 length (2 for supplementary-plane)
         int from = 0;
-        for (int i = 0; i < query.length(); i++) {
-            int found = indexOfIgnoreCase(candidate, query.charAt(i), from);
+        for (int qi = 0; qi < query.length(); ) {
+            int queryCodePoint = query.codePointAt(qi);
+            int found = indexOfIgnoreCase(candidate, queryCodePoint, from);
             if (found < 0) return null;
             indices.add(found);
             score += BASE_MATCH_SCORE;
-            if (found == prevIndex + 1) score += CONSECUTIVE_BONUS;
+            if (found == prevIndex + prevCharCount) score += CONSECUTIVE_BONUS;
             prevIndex = found;
-            from = found + 1;
+            prevCharCount = Character.charCount(candidate.codePointAt(found));
+            from = found + prevCharCount;
+            qi += Character.charCount(queryCodePoint);
         }
 
         // Earlier first match ranks higher; bonus decays with the start offset.
@@ -70,20 +74,24 @@ public final class TextInputHistoryMatcher {
     }
 
     /**
-     * Locale-independent, case-insensitive char search. Compares per-char via
-     * {@link Character#toLowerCase(char)}/{@link Character#toUpperCase(char)}
-     * (Unicode-property based, never locale-sensitive like
-     * {@link String#toLowerCase()}), and never normalizes whole strings — so
-     * returned indices always index the ORIGINAL candidate for highlighting.
+     * Locale-independent, case-insensitive code-point search. Iterates Unicode
+     * code points (so supplementary-plane case pairs like Deseret 𐐀/𐐨 fold
+     * correctly) and compares via {@link Character#toLowerCase(int)}/
+     * {@link Character#toUpperCase(int)} (Unicode-property based, never
+     * locale-sensitive like {@link String#toLowerCase()}). Strings are never
+     * normalized, so the returned value is always the UTF-16 start index of
+     * the matched code point in the ORIGINAL candidate for highlighting.
      */
-    private static int indexOfIgnoreCase(String candidate, char queryChar, int from) {
-        for (int i = Math.max(from, 0); i < candidate.length(); i++) {
-            if (charsEqualIgnoreCase(candidate.charAt(i), queryChar)) return i;
+    private static int indexOfIgnoreCase(String candidate, int queryCodePoint, int from) {
+        for (int i = Math.max(from, 0); i < candidate.length(); ) {
+            int candidateCodePoint = candidate.codePointAt(i);
+            if (codePointsEqualIgnoreCase(candidateCodePoint, queryCodePoint)) return i;
+            i += Character.charCount(candidateCodePoint);
         }
         return -1;
     }
 
-    private static boolean charsEqualIgnoreCase(char a, char b) {
+    private static boolean codePointsEqualIgnoreCase(int a, int b) {
         if (a == b) return true;
         if (Character.toLowerCase(a) == Character.toLowerCase(b)) return true;
         // Mirrors String.regionMatches(ignoreCase): some scripts (e.g. Georgian)

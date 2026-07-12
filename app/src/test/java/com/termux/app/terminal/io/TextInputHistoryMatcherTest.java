@@ -65,6 +65,28 @@ public class TextInputHistoryMatcherTest {
             TextInputHistoryMatcher.match("g", null));
     }
 
+    /**
+     * AC terminal-toolbar.history-picker-search-and-selection: case folding
+     * covers supplementary-plane pairs — Deseret 𐐀 (U+10400, uppercase) must
+     * match 𐐨 (U+10428, its lowercase), which requires code-point iteration
+     * rather than per-UTF-16-char folding; indices stay UTF-16 offsets into
+     * the original candidate.
+     */
+    @Test
+    public void testSupplementaryPlaneCaseFolding() {
+        String upper = new String(Character.toChars(0x10400)); // 𐐀
+        String lower = new String(Character.toChars(0x10428)); // 𐐨
+
+        TextInputHistoryMatcher.Result result = TextInputHistoryMatcher.match(upper, "x" + lower + "y");
+        Assert.assertNotNull("supplementary-plane case pair must match", result);
+        Assert.assertArrayEquals(new int[]{1}, result.matchedIndices);
+        Assert.assertEquals(0x10428, ("x" + lower + "y").codePointAt(result.matchedIndices[0]));
+
+        Assert.assertNotNull(TextInputHistoryMatcher.match(lower, upper));
+        Assert.assertNull("unrelated supplementary chars must not match",
+            TextInputHistoryMatcher.match(upper, new String(Character.toChars(0x10440))));
+    }
+
     /** AC terminal-toolbar.history-picker-search-and-selection: highlight indices point at the matched characters. */
     @Test
     public void testHighlightIndices() {
