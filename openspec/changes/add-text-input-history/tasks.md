@@ -2,12 +2,12 @@
 
 ## 1. Core history model (pure Java, unit-testable)
 
-- [ ] 1.1 Create `TextInputHistory` in-memory store: process-lifetime singleton holding `(text, epochMillis)` entries most-recent-first; `record(text)` ignores empty text, bumps+refreshes when equal to the current most-recent entry, evicts oldest beyond 100; `delete(entry)`, `clear()`, `snapshot()` accessors. No disk/SharedPreferences/log writes (constitution V; AC terminal-toolbar.text-input-history-capture).
+- [x] 1.1 Create `TextInputHistory` in-memory store: process-lifetime singleton holding `(text, epochMillis)` entries most-recent-first; `record(text)` ignores empty text, bumps+refreshes when equal to the current most-recent entry, evicts oldest beyond 100; `delete(entry)`, `clear()`, `snapshot()` accessors. No disk/SharedPreferences/log writes (constitution V; AC terminal-toolbar.text-input-history-capture).
   - intent: feature
   - files_allowed:
       - app/src/main/java/com/termux/app/terminal/io/TextInputHistory.java
   - allow_new_files: true
-- [ ] 1.2 Create case-insensitive fuzzy subsequence matcher used by the picker: returns match/no-match, matched character indices (for highlighting), and a score ranking denser/earlier matches; ties broken by recency at the call site (AC terminal-toolbar.history-picker-search-and-selection).
+- [x] 1.2 Create case-insensitive fuzzy subsequence matcher used by the picker: returns match/no-match, matched character indices (for highlighting), and a score ranking denser/earlier matches; ties broken by recency at the call site (AC terminal-toolbar.history-picker-search-and-selection).
   - intent: feature
   - files_allowed:
       - app/src/main/java/com/termux/app/terminal/io/TextInputHistoryMatcher.java
