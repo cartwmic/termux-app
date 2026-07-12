@@ -44,17 +44,14 @@ public final class TextInputHistoryMatcher {
     public static Result match(String query, String candidate) {
         if (candidate == null) return null;
         if (query == null || query.isEmpty()) return new Result(0, new int[0]);
+        if (query.length() > candidate.length()) return null;
 
-        String q = query.toLowerCase();
-        String c = candidate.toLowerCase();
-        if (q.length() > c.length()) return null;
-
-        List<Integer> indices = new ArrayList<>(q.length());
+        List<Integer> indices = new ArrayList<>(query.length());
         int score = 0;
         int prevIndex = -2;
         int from = 0;
-        for (int i = 0; i < q.length(); i++) {
-            int found = c.indexOf(q.charAt(i), from);
+        for (int i = 0; i < query.length(); i++) {
+            int found = indexOfIgnoreCase(candidate, query.charAt(i), from);
             if (found < 0) return null;
             indices.add(found);
             score += BASE_MATCH_SCORE;
@@ -70,5 +67,27 @@ public final class TextInputHistoryMatcher {
         int[] out = new int[indices.size()];
         for (int i = 0; i < out.length; i++) out[i] = indices.get(i);
         return new Result(score, out);
+    }
+
+    /**
+     * Locale-independent, case-insensitive char search. Compares per-char via
+     * {@link Character#toLowerCase(char)}/{@link Character#toUpperCase(char)}
+     * (Unicode-property based, never locale-sensitive like
+     * {@link String#toLowerCase()}), and never normalizes whole strings — so
+     * returned indices always index the ORIGINAL candidate for highlighting.
+     */
+    private static int indexOfIgnoreCase(String candidate, char queryChar, int from) {
+        for (int i = Math.max(from, 0); i < candidate.length(); i++) {
+            if (charsEqualIgnoreCase(candidate.charAt(i), queryChar)) return i;
+        }
+        return -1;
+    }
+
+    private static boolean charsEqualIgnoreCase(char a, char b) {
+        if (a == b) return true;
+        if (Character.toLowerCase(a) == Character.toLowerCase(b)) return true;
+        // Mirrors String.regionMatches(ignoreCase): some scripts (e.g. Georgian)
+        // only fold correctly through toUpperCase.
+        return Character.toUpperCase(a) == Character.toUpperCase(b);
     }
 }

@@ -55,7 +55,7 @@ public class TextInputHistoryTest {
         Assert.assertEquals(1, snapshot.size());
         Assert.assertEquals("git status", snapshot.get(0).text);
         Assert.assertTrue("bump must refresh the timestamp",
-            snapshot.get(0).timestamp >= firstTimestamp);
+            snapshot.get(0).timestamp > firstTimestamp);
     }
 
     /**

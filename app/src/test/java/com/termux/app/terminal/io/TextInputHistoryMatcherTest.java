@@ -3,6 +3,8 @@ package com.termux.app.terminal.io;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.Locale;
+
 /** Unit tests for AC terminal-toolbar.history-picker-search-and-selection (fuzzy matcher). */
 public class TextInputHistoryMatcherTest {
 
@@ -28,6 +30,26 @@ public class TextInputHistoryMatcherTest {
     public void testCaseInsensitive() {
         Assert.assertNotNull(TextInputHistoryMatcher.match("GS", "git status"));
         Assert.assertNotNull(TextInputHistoryMatcher.match("gs", "GIT STATUS"));
+    }
+
+    /**
+     * AC terminal-toolbar.history-picker-search-and-selection: case folding is
+     * locale-independent — under a Turkish default locale, "I"/"i" must still
+     * match (String.toLowerCase would map I→ı and break this), and highlight
+     * indices must index the original candidate.
+     */
+    @Test
+    public void testCaseFoldingIsLocaleIndependent() {
+        Locale original = Locale.getDefault();
+        try {
+            Locale.setDefault(new Locale("tr", "TR"));
+            TextInputHistoryMatcher.Result result = TextInputHistoryMatcher.match("I", "git init");
+            Assert.assertNotNull("'I' must match 'i' under a Turkish default locale", result);
+            Assert.assertEquals('i', "git init".charAt(result.matchedIndices[0]));
+            Assert.assertNotNull(TextInputHistoryMatcher.match("i", "LIST"));
+        } finally {
+            Locale.setDefault(original);
+        }
     }
 
     /** AC terminal-toolbar.history-picker-search-and-selection: empty/null query matches everything, no highlights. */

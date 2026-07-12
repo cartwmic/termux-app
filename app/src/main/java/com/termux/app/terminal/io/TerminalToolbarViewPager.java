@@ -128,6 +128,10 @@ public class TerminalToolbarViewPager {
      * present in both toolbar modes and regardless of history emptiness.
      */
     private static void setupHistoryPickerIcon(final TermuxActivity activity, final EditText editText) {
+        // Tracks whether the current gesture's ACTION_DOWN landed in the icon
+        // region; the picker opens only for a short tap fully inside it.
+        final boolean[] downInIconRegion = {false};
+
         editText.setOnTouchListener((v, event) -> {
             Drawable endDrawable = editText.getCompoundDrawablesRelative()[2];
             if (endDrawable == null) return false;
@@ -137,15 +141,30 @@ public class TerminalToolbarViewPager {
             boolean inIconRegion = rtl
                 ? event.getX() <= touchRegionWidth
                 : event.getX() >= editText.getWidth() - touchRegionWidth;
-            if (!inIconRegion) return false;
-            if (event.getAction() == MotionEvent.ACTION_UP) {
+
+            // Never consume DOWN/MOVE: stock cursor placement, text selection
+            // and long-press (which fires at the long-press timeout and shows
+            // the paste/selection menu even over the icon) all stay intact.
+            if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                downInIconRegion[0] = inIconRegion;
+                return false;
+            }
+            if (event.getAction() != MotionEvent.ACTION_UP) return false;
+
+            // Open only when the gesture began AND ended inside the icon
+            // region and released before the long-press timeout — a gesture
+            // that started on the text, or a long-press over the icon, falls
+            // through to stock EditText handling untouched.
+            boolean shortTap = event.getEventTime() - event.getDownTime()
+                < android.view.ViewConfiguration.getLongPressTimeout();
+            if (downInIconRegion[0] && inIconRegion && shortTap) {
+                downInIconRegion[0] = false;
                 v.performClick();
                 TextInputHistorySheet.show(activity, editText);
+                return true;
             }
-            // Consume DOWN/UP inside the icon region so the tap neither moves
-            // the cursor nor starts a long-press under the icon.
-            return event.getAction() == MotionEvent.ACTION_DOWN
-                || event.getAction() == MotionEvent.ACTION_UP;
+            downInIconRegion[0] = false;
+            return false;
         });
     }
 
