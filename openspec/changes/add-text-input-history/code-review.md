@@ -16,6 +16,16 @@
 |---|---|---|---|---|---|---|---|
 | 1 | blind | 0 | 3 | 3 | 3 | gpt-5.6-sol:fail claude-fable-5:pass | 46af3bbb |
 | 2 | blind | 0 | 1 | 2 | 4 | gpt-5.6-sol:fail claude-fable-5:pass | f8cb9d49 |
+| 3 | blind | 0 | 1 | 1 | 5 | gpt-5.6-sol:fail claude-fable-5:pass | 1ed24223 |
+
+Round 3 notes: both reviewers attested HEAD
+1ed24223a43b63bcf8e4052653e9f741fdad0b16 + worktree path (both valid, counted;
+no dispatch anomalies). Ledger excluded from both surfaces. Both confirmed no
+gate-manifest touch; both independently re-confirmed the tasks.md checkoff
+pattern conforms to plan.md step 5. Trajectory: P0+P1 3→1→1 — fixes landed
+after each round (condition b, converging; each round's P1 is a NEW finding,
+not a persisting one: round-2's delete-identity fix was verified by both
+round-3 reviewers). Round 4 is within review_max_rounds (5).
 
 Round 2 notes: both counted reviewers attested HEAD
 f8cb9d49a32765a1e1980f3c0dbbcbb0af723471 + worktree path. The first
@@ -56,6 +66,11 @@ manifest.
 | 12 | [R2/fable] showSoftInput inside onDismiss can silently no-op before the activity window regains focus — intermittent miss of the IME-return half of the pick AC | P2 | fixed |
 | 13 | [R2/fable] tasks.md checked off incrementally per feature commit rather than at plan step 5 — sequencing nit; checkoff pattern itself judged conforming (supersedes finding 3's P1 grading) | P3 | deferred |
 | 14 | [R2/fable] History icon invisible to TalkBack (compound drawable, no content description; plan step 3 listed one) — spec silent on a11y | P3 | deferred |
+| 15 | [R3/sol] Matcher folds case per UTF-16 char; supplementary-plane case pairs (Deseret 𐐀 U+10400 / 𐐨 U+10428) fail to match — code-point iteration required (AC history-picker-search-and-selection: case-insensitive matching) | P1 | fixed |
+| 16 | [R3/fable] Fixed 240dp list + footer in wrap_content LinearLayout can clip below IME on short screens/landscape (re-statement of finding 8) | P2 | deferred |
+| 17 | [R3/fable] cancelLongPress() clears the long-press check but not the lingering prepressed/pressed visual state after a consumed icon tap | P3 | deferred |
+| 18 | [R3/fable] Navigator cycle snapshot can recall just-deleted texts if entries are deleted via the sheet mid-cycle (fixed-snapshot readline semantics; baseline silent) | P3 | deferred |
+| 19 | [R3/fable] No touch-slop tracking: DOWN on icon → drag away → return → UP still opens the sheet (baseline silent) | P3 | deferred |
 
 ## Applied fixes
 
@@ -69,20 +84,23 @@ manifest.
   - Finding 11: `editText.cancelLongPress()` before opening the sheet kills the armed long-press check.
   - Finding 12: focus + `showSoftInput` posted from onDismiss so the activity window regains focus first.
   - Validation re-run green: 20 tests, 0 failures.
+- ed433a37bda16a095de9a6ae80bd1b09d82c3388 `fix: fold case per Unicode code point in fuzzy matcher (code-review round-3 finding)`:
+  - Finding 15 (P1): matcher iterates Unicode code points (query and candidate); case comparison via Character.toLowerCase(int)/toUpperCase(int); consecutive-run bonus advances by charCount; matchedIndices remain UTF-16 start offsets into the ORIGINAL candidate; sheet highlight spans the full charCount so supplementary characters bold whole. New test pins Deseret U+10400↔U+10428 folding (forced full rerun: 21 tests, 0 failures).
 
 ## Residual risks
 
 - Finding 3: RESOLVED in round 2 — both blind round-2 reviewers independently judged the worktree-side checkoff pattern conforming to plan.md step 5 (fable regraded the sequencing aspect P3, finding 13). Original orchestrator position retained below for the record.
 - Finding 3 (disputed, orchestrator position for round 2): worktree-side tasks.md checkbox flips are the schema's sanctioned progress-tracking mechanism — plan.md step 5 explicitly requires "worktree-side task checkoff", and the gate's tasks check reads those checkboxes from the worktree; task `files_allowed` contracts scope the IMPLEMENTATION surface of each task, not the checkoff bookkeeping that rides every opsx commit. Checkbox-flip diffs are text-otherwise-byte-identical (verified by the second round-1 reviewer, who judged the same pattern conforming). Round 2 blind reviewers adjudicate against the same baseline.
-- Findings 7–9 deferred as advisory (P3): spec-silent focus behavior on dismiss-without-pick, short-window footer clipping, and greedy-alignment ranking imperfection — none contract-violating; candidates for a follow-up change.
+- Findings 7–9, 13–14, 16–19 deferred as advisory (P2/P3, none contract-violating): spec-silent focus behavior on dismiss-without-pick, short-window footer clipping (8/16), checkoff sequencing nit, TalkBack reachability of the icon, pressed-state cosmetic linger, mid-cycle deletion staleness under fixed-snapshot readline semantics, and touch-slop nit — candidates for a follow-up change (a11y being the most user-visible).
 
 ## Verdict rationale
 
 Round 1 failed on three P1s (gesture handling, locale-sensitive matching, tasks.md
 contract — the last resolved as conforming by both round-2 reviewers). Round 2 failed
-on one P1 (delete identity ambiguity for same-text same-millisecond duplicates),
-graded P3-theoretical by the second reviewer; fixed at 358ce391 with identity-based
-deletion plus a pinning test, alongside both round-2 P2s. Trajectory is converging
-(P0+P1: 3 → 1) with change-scoped fixes landed after each round — continuation
-condition (b); round 3 blind re-dispatch follows against the post-fix HEAD. Verdict
-remains fail until a quiet round seals pass.
+on one new P1 (delete identity ambiguity), fixed at 358ce391 with a pinning test.
+Round 3 failed on one new P1 (supplementary-plane case folding), fixed at ed433a37
+with a pinning test; both round-3 reviewers verified all prior fixes hold. Each
+round's P1 is a fresh finding — nothing persists across rounds — and change-scoped
+fixes landed after every round: continuation condition (b), round 4 blind re-dispatch
+follows against the post-fix HEAD within the 5-round cap. Verdict remains fail until
+a quiet round seals pass.
