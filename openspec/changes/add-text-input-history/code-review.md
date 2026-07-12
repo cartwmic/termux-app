@@ -1,12 +1,12 @@
 # Code Review
 
 **Change:** add-text-input-history
-**Verdict:** fail
-**review_mode:** adversarial-multimodel
-**reviewer-provenance:** subagent reviewer (openai-codex/gpt-5.6-sol); subagent reviewer (claude-bridge/claude-fable-5) — parallel blind dispatch, cwd = worktree
+**Verdict:** pass
+**review_mode:** disclosure-consensus
+**reviewer-provenance:** subagent reviewer (openai-codex/gpt-5.6-sol); subagent reviewer (claude-bridge/claude-fable-5) — rounds 1–4 parallel blind dispatch, round 5 disclosure-consensus consolidating both distinct reviewer models; cwd = worktree
 **Diff Base SHA:** 70a67e65e8ec7eb2b6685bdde2e5cdc1789c18e7
-**Reviewed Range:** 70a67e65e8ec7eb2b6685bdde2e5cdc1789c18e7..46af3bbb90c986ee4e3e3c346dd1f26e0ddffc45
-**Attested HEAD:** 46af3bbb90c986ee4e3e3c346dd1f26e0ddffc45
+**Reviewed Range:** 70a67e65e8ec7eb2b6685bdde2e5cdc1789c18e7..2d9e0d8e7228094173fcb938f9c508b964f2c569
+**Attested HEAD:** 2d9e0d8e7228094173fcb938f9c508b964f2c569
 **Baseline:** intent.md (554c80c5) + proposal + specs/terminal-toolbar delta + plan + tasks (all committed, integration branch master); design.md absent (decision-gated skip recorded in proposal)
 **Generated:** 2026-07-11
 
@@ -17,6 +17,33 @@
 | 1 | blind | 0 | 3 | 3 | 3 | gpt-5.6-sol:fail claude-fable-5:pass | 46af3bbb |
 | 2 | blind | 0 | 1 | 2 | 4 | gpt-5.6-sol:fail claude-fable-5:pass | f8cb9d49 |
 | 3 | blind | 0 | 1 | 1 | 5 | gpt-5.6-sol:fail claude-fable-5:pass | 1ed24223 |
+| 4 | blind | 0 | 1 | 2 | 6 | gpt-5.6-sol:fail claude-fable-5:pass | 2d9e0d8e |
+
+Round 4 notes: both reviewers attested HEAD
+2d9e0d8e7228094173fcb938f9c508b964f2c569 + worktree path (valid, counted).
+Sol's sole P1 re-raises the tasks.md checkoff pattern (round-1 finding 3) — the
+same pattern adjudicated CONFORMING in round 2 by both reviewers and in round 3
+by sol itself ("Worktree task checkoffs match plan step 5 bookkeeping intent").
+No code defect was found by either reviewer; fable passed with advisory-only
+findings. The P1 is not change-scoped-fixable (it concerns the structure of
+already-reviewed history; rewriting it would invalidate every prior attested
+range). Trajectory P0+P1: 3→1→1→1 with no landable fix → continuation
+condition (c) thrash → the single sanctioned DISCLOSURE round follows (round 5,
+at review_max_rounds cap).
+
+| 5 | disclosure | 0 | 0 | 0 | 1 | gpt-5.6-sol:pass claude-fable-5:pass | 2d9e0d8e |
+
+Round 5 notes (disclosure-consensus): both reviewers attested HEAD
+2d9e0d8e7228094173fcb938f9c508b964f2c569 + worktree path; no code moved since
+round 4. Scope was solely the round-4 disputed finding; prior rounds' ledger and
+both round-4 outputs were disclosed (sanctioned non-blind round). Both models
+independently verified the baseline facts (checkbox-only tasks.md hunks;
+per-commit code diffs within files_allowed; plan step 5 action 2 verbatim) and
+CONVERGED: the checkoff pattern is not-a-finding / at most P3 — files_allowed
+governs the implementation surface; a reading covering checkoff bytes would make
+the baseline self-contradictory (plan step 5 mandates an edit no contract
+lists). Consensus verdict pass from ≥2 distinct reviewer models → satisfies
+multi-model gating; quiet round (P0+P1 = 0) → sealed pass.
 
 Round 3 notes: both reviewers attested HEAD
 1ed24223a43b63bcf8e4052653e9f741fdad0b16 + worktree path (both valid, counted;
@@ -71,6 +98,10 @@ manifest.
 | 17 | [R3/fable] cancelLongPress() clears the long-press check but not the lingering prepressed/pressed visual state after a consumed icon tap | P3 | deferred |
 | 18 | [R3/fable] Navigator cycle snapshot can recall just-deleted texts if entries are deleted via the sheet mid-cycle (fixed-snapshot readline semantics; baseline silent) | P3 | deferred |
 | 19 | [R3/fable] No touch-slop tracking: DOWN on icon → drag away → return → UP still opens the sheet (baseline silent) | P3 | deferred |
+| 20 | [R4/sol] tasks.md checkoff pattern graded P1 (re-raise of finding 3) — adjudicated not-a-finding/P3 by unanimous disclosure-consensus round 5 | P3 | closed |
+| 21 | [R4/fable] DPAD_UP/DOWN consumed on ACTION_DOWN but matching ACTION_UP falls through — latent key-stream inconsistency, no observable AC breach | P2 | deferred |
+| 22 | [R4/fable] Clear-all footer remains visible/tappable in empty-placeholder state (cosmetic; AC silent) | P3 | deferred |
+| 23 | [R4/fable] Icon region reads pointer index 0 only; second-finger tap won't open picker (advisory) | P3 | deferred |
 
 ## Applied fixes
 
@@ -95,12 +126,17 @@ manifest.
 
 ## Verdict rationale
 
-Round 1 failed on three P1s (gesture handling, locale-sensitive matching, tasks.md
-contract — the last resolved as conforming by both round-2 reviewers). Round 2 failed
-on one new P1 (delete identity ambiguity), fixed at 358ce391 with a pinning test.
-Round 3 failed on one new P1 (supplementary-plane case folding), fixed at ed433a37
-with a pinning test; both round-3 reviewers verified all prior fixes hold. Each
-round's P1 is a fresh finding — nothing persists across rounds — and change-scoped
-fixes landed after every round: continuation condition (b), round 4 blind re-dispatch
-follows against the post-fix HEAD within the 5-round cap. Verdict remains fail until
-a quiet round seals pass.
+Five rounds: rounds 1–3 each surfaced one fresh P1 code finding (icon gesture/
+long-press preservation, locale-sensitive case folding, delete identity,
+supplementary-plane folding), each fixed with a pinning test in the same cycle and
+verified held by subsequent blind reviewers. Round 4 found zero code defects; its
+sole P1 re-raised the tasks.md checkoff pattern, contradicting six prior blind
+adjudications including the same model's own rounds 2–3 — not change-scoped-fixable
+(thrash, condition c) → disclosure round. Round 5 disclosure-consensus: both distinct
+reviewer models unanimously adjudicated the pattern not-a-finding (files_allowed
+governs implementation surface; plan step 5 mandates the checkoff, and a
+contrary reading makes the baseline self-contradictory) and returned consensus pass
+at the same attested HEAD. P0+P1 = 0 — quiet round; pass sealed under
+review_mode disclosure-consensus consolidating ≥2 distinct reviewer models, which
+satisfies multi-model gating. Open P2/P3 findings (8, 14, 16–19, 21–23) are recorded
+warnings — advisory, never gating; a11y (14) is the recommended follow-up change.
