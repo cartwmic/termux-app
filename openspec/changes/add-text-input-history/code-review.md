@@ -15,6 +15,19 @@
 | Round | Mode | P0 | P1 | P2 | P3 | Reviewer verdicts | Reviewed HEAD |
 |---|---|---|---|---|---|---|---|
 | 1 | blind | 0 | 3 | 3 | 3 | gpt-5.6-sol:fail claude-fable-5:pass | 46af3bbb |
+| 2 | blind | 0 | 1 | 2 | 4 | gpt-5.6-sol:fail claude-fable-5:pass | f8cb9d49 |
+
+Round 2 notes: both counted reviewers attested HEAD
+f8cb9d49a32765a1e1980f3c0dbbcbb0af723471 + worktree path. The first
+claude-fable-5 dispatch terminated prematurely with NO attestation and no
+findings/verdict — INVALID per the attestation rule, excluded from gating,
+ledger counts, and the round budget; the reviewer was re-dispatched blind and
+the re-dispatch is the counted verdict. Ledger file was excluded from both
+reviewers' surface (blind protocol). Both confirmed no gate-manifest touch.
+Round-1 finding 3 (tasks.md checkoff contract) was independently adjudicated
+conforming by both round-2 reviewers against plan.md step 5 (sol: "align with
+plan step 5 bookkeeping"; fable: graded P3 sequencing nit) — dispute resolved,
+no baseline edit needed. Trajectory: P0+P1 3→1 (converging, condition b).
 
 Round 1 notes: both reviewers attested HEAD 46af3bbb90c986ee4e3e3c346dd1f26e0ddffc45
 and the worktree path (valid, counted). The claude-fable-5 run ended with a harness
@@ -38,6 +51,11 @@ manifest.
 | 7 | [fable] Dismiss-without-pick unconditionally refocuses box + shows IME even when the terminal had focus before the icon tap — beyond-spec focus steal (spec silent) | P3 | deferred |
 | 8 | [fable] Fixed 240dp list in a non-weighted LinearLayout can clip the clear-all footer below short windows (landscape + IME) | P3 | deferred |
 | 9 | [fable] Greedy leftmost subsequence alignment can under-score candidates where a later alignment yields consecutive runs — ranking imperfection only | P3 | deferred |
+| 10 | [R2/sol] TextInputHistory.delete() matches by (text, timestamp); non-consecutive duplicate texts recorded in the same millisecond are indistinguishable — long-press-delete can remove the wrong row (AC history-entry-deletion-and-clearing "that entry is removed") | P1 | fixed |
+| 11 | [R2/fable] Unconsumed DOWN arms the EditText's pending long-press check; a tap held just under the timeout can fire the stock menu concurrently with the sheet opening | P2 | fixed |
+| 12 | [R2/fable] showSoftInput inside onDismiss can silently no-op before the activity window regains focus — intermittent miss of the IME-return half of the pick AC | P2 | fixed |
+| 13 | [R2/fable] tasks.md checked off incrementally per feature commit rather than at plan step 5 — sequencing nit; checkoff pattern itself judged conforming (supersedes finding 3's P1 grading) | P3 | deferred |
+| 14 | [R2/fable] History icon invisible to TalkBack (compound drawable, no content description; plan step 3 listed one) — spec silent on a11y | P3 | deferred |
 
 ## Applied fixes
 
@@ -46,18 +64,25 @@ manifest.
   - Findings 2+5: matcher rewritten to per-char locale-independent folding (`Character.toLowerCase`/`toUpperCase`, mirroring `String.regionMatches(ignoreCase)`); no whole-string normalization, so highlight indices always index the original candidate. New regression test runs under a forced `tr_TR` default locale.
   - Finding 4: bump-timestamp assertion tightened to strict `>`.
   - Validation re-run green: `:app:compileDebugJavaWithJavac :app:testDebugUnitTest`, 19 tests, 0 failures.
+- 358ce3911c57431c52d90f6dba2a19ae830b1748 `fix: address code-review round-2 findings (identity-based delete, long-press cancel, posted IME return)`:
+  - Finding 10 (P1): delete() now matches by object identity — snapshots hand out stored Entry references, so identity uniquely names one row even for same-text same-millisecond duplicates; new unit test pins duplicate disambiguation.
+  - Finding 11: `editText.cancelLongPress()` before opening the sheet kills the armed long-press check.
+  - Finding 12: focus + `showSoftInput` posted from onDismiss so the activity window regains focus first.
+  - Validation re-run green: 20 tests, 0 failures.
 
 ## Residual risks
 
+- Finding 3: RESOLVED in round 2 — both blind round-2 reviewers independently judged the worktree-side checkoff pattern conforming to plan.md step 5 (fable regraded the sequencing aspect P3, finding 13). Original orchestrator position retained below for the record.
 - Finding 3 (disputed, orchestrator position for round 2): worktree-side tasks.md checkbox flips are the schema's sanctioned progress-tracking mechanism — plan.md step 5 explicitly requires "worktree-side task checkoff", and the gate's tasks check reads those checkboxes from the worktree; task `files_allowed` contracts scope the IMPLEMENTATION surface of each task, not the checkoff bookkeeping that rides every opsx commit. Checkbox-flip diffs are text-otherwise-byte-identical (verified by the second round-1 reviewer, who judged the same pattern conforming). Round 2 blind reviewers adjudicate against the same baseline.
 - Findings 7–9 deferred as advisory (P3): spec-silent focus behavior on dismiss-without-pick, short-window footer clipping, and greedy-alignment ranking imperfection — none contract-violating; candidates for a follow-up change.
 
 ## Verdict rationale
 
-Round 1 splits: gpt-5.6-sol fails on three P1s (long-press-over-icon gesture handling,
-locale-sensitive fuzzy matching, tasks.md file-contract breach); claude-fable-5 passes
-with the first two graded P2 and the tasks.md checkoff pattern judged conforming
-(worktree-side checkoff riding each commit, per plan.md step 5). Under the
-max-across-reviewers rule the round carries open P1s, so the consolidated verdict is
-fail. Continuation condition (b) applies: land change-scoped fixes for findings 1/2
-(and the overlapping 4–6), address 3, then re-dispatch a fresh blind round.
+Round 1 failed on three P1s (gesture handling, locale-sensitive matching, tasks.md
+contract — the last resolved as conforming by both round-2 reviewers). Round 2 failed
+on one P1 (delete identity ambiguity for same-text same-millisecond duplicates),
+graded P3-theoretical by the second reviewer; fixed at 358ce391 with identity-based
+deletion plus a pinning test, alongside both round-2 P2s. Trajectory is converging
+(P0+P1: 3 → 1) with change-scoped fixes landed after each round — continuation
+condition (b); round 3 blind re-dispatch follows against the post-fix HEAD. Verdict
+remains fail until a quiet round seals pass.
