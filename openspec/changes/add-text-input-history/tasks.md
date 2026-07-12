@@ -48,17 +48,17 @@
 
 ## 4. Tests and validation
 
-- [ ] 4.1 Unit tests for `TextInputHistory` citing AC ID `terminal-toolbar.text-input-history-capture` literally: record, empty-send exclusion, consecutive-duplicate bump (non-consecutive duplicates stay distinct — proposal A1), 100-cap eviction, delete, clear.
+- [x] 4.1 Unit tests for `TextInputHistory` citing AC ID `terminal-toolbar.text-input-history-capture` literally: record, empty-send exclusion, consecutive-duplicate bump (non-consecutive duplicates stay distinct — proposal A1), 100-cap eviction, delete, clear.
   - intent: feature
   - files_allowed:
       - app/src/test/java/com/termux/app/terminal/io/TextInputHistoryTest.java
   - allow_new_files: true
-- [ ] 4.2 Unit tests for the fuzzy matcher citing AC ID `terminal-toolbar.history-picker-search-and-selection`: subsequence hit/miss, case-insensitivity (proposal A3), highlight indices, score ordering.
+- [x] 4.2 Unit tests for the fuzzy matcher citing AC ID `terminal-toolbar.history-picker-search-and-selection`: subsequence hit/miss, case-insensitivity (proposal A3), highlight indices, score ordering.
   - intent: feature
   - files_allowed:
       - app/src/test/java/com/termux/app/terminal/io/TextInputHistoryMatcherTest.java
   - allow_new_files: true
-- [ ] 4.3 Unit tests for the cycling navigator citing AC ID `terminal-toolbar.hardware-keyboard-history-cycling`: up/down traversal, draft save/restore, typing resets position, empty-history inert.
+- [x] 4.3 Unit tests for the cycling navigator citing AC ID `terminal-toolbar.hardware-keyboard-history-cycling`: up/down traversal, draft save/restore, typing resets position, empty-history inert.
   - intent: feature
   - files_allowed:
       - app/src/test/java/com/termux/app/terminal/io/TextInputHistoryNavigatorTest.java
