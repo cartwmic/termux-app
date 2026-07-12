@@ -29,23 +29,28 @@ manifest.
 
 | # | Finding | Severity | Status |
 |---|---|---|---|
-| 1 | [sol] Icon touch handler consumes ACTION_DOWN in the icon region and opens the picker on any later ACTION_UP with no long-press/slop handling — long-press over the icon can open the picker instead of the stock selection/paste menu (AC history-picker-affordance: "long-press remains the stock menu") | P1 | open |
-| 2 | [sol] TextInputHistoryMatcher uses locale-sensitive String.toLowerCase(); under Turkish/Azeri locales case-equivalent text (I/i/ı) fails to match, and lowercasing can change string length so highlight indices can refer to the normalized string, not the original candidate (AC history-picker-search-and-selection: case-insensitive matching + highlighting) | P1 | open |
-| 3 | [sol] Every implementation/test commit also modifies tasks.md although each task's files_allowed excludes it; T4.4's commit touches only tasks.md despite T4.4 allowing only app/** (tasks.md file contracts) | P1 | open |
-| 4 | [fable] testConsecutiveDuplicateBumpsInsteadOfInserting asserts timestamp >= firstTimestamp — vacuously true even if the bump does not refresh the timestamp; ">" would pin the AC's "refreshed timestamp" clause | P2 | open |
-| 5 | [fable] Matcher toLowerCase() default-locale hazard (same defect as #2, graded P2 by this reviewer; fix with locale-stable comparison) | P2 | open |
-| 6 | [fable] Icon OnTouchListener consumes ACTION_UP based solely on UP coordinates: a gesture starting on the text and released over the icon opens the sheet and swallows the UP the EditText needs; should require the DOWN to have landed in-region (same surface as #1, graded P2) | P2 | open |
-| 7 | [fable] Dismiss-without-pick unconditionally refocuses box + shows IME even when the terminal had focus before the icon tap — beyond-spec focus steal (spec silent) | P3 | open |
-| 8 | [fable] Fixed 240dp list in a non-weighted LinearLayout can clip the clear-all footer below short windows (landscape + IME) | P3 | open |
-| 9 | [fable] Greedy leftmost subsequence alignment can under-score candidates where a later alignment yields consecutive runs — ranking imperfection only | P3 | open |
+| 1 | [sol] Icon touch handler consumes ACTION_DOWN in the icon region and opens the picker on any later ACTION_UP with no long-press/slop handling — long-press over the icon can open the picker instead of the stock selection/paste menu (AC history-picker-affordance: "long-press remains the stock menu") | P1 | fixed |
+| 2 | [sol] TextInputHistoryMatcher uses locale-sensitive String.toLowerCase(); under Turkish/Azeri locales case-equivalent text (I/i/ı) fails to match, and lowercasing can change string length so highlight indices can refer to the normalized string, not the original candidate (AC history-picker-search-and-selection: case-insensitive matching + highlighting) | P1 | fixed |
+| 3 | [sol] Every implementation/test commit also modifies tasks.md although each task's files_allowed excludes it; T4.4's commit touches only tasks.md despite T4.4 allowing only app/** (tasks.md file contracts) | P1 | disputed |
+| 4 | [fable] testConsecutiveDuplicateBumpsInsteadOfInserting asserts timestamp >= firstTimestamp — vacuously true even if the bump does not refresh the timestamp; ">" would pin the AC's "refreshed timestamp" clause | P2 | fixed |
+| 5 | [fable] Matcher toLowerCase() default-locale hazard (same defect as #2, graded P2 by this reviewer; fix with locale-stable comparison) | P2 | fixed |
+| 6 | [fable] Icon OnTouchListener consumes ACTION_UP based solely on UP coordinates: a gesture starting on the text and released over the icon opens the sheet and swallows the UP the EditText needs; should require the DOWN to have landed in-region (same surface as #1, graded P2) | P2 | fixed |
+| 7 | [fable] Dismiss-without-pick unconditionally refocuses box + shows IME even when the terminal had focus before the icon tap — beyond-spec focus steal (spec silent) | P3 | deferred |
+| 8 | [fable] Fixed 240dp list in a non-weighted LinearLayout can clip the clear-all footer below short windows (landscape + IME) | P3 | deferred |
+| 9 | [fable] Greedy leftmost subsequence alignment can under-score candidates where a later alignment yields consecutive runs — ranking imperfection only | P3 | deferred |
 
 ## Applied fixes
 
-- (none yet — round 1 sealed fail; fix round follows)
+- 2e8f37bc716cfb08c9e87279106844ee8c571963 `fix: address code-review round-1 findings (icon gesture, locale-safe fuzzy matching, test pinning)`:
+  - Findings 1+6: touch handler no longer consumes DOWN/MOVE anywhere; the picker opens only when DOWN and UP both land in the icon region and the release beats `ViewConfiguration.getLongPressTimeout()` — long-press (over icon or text) and cross-region gestures fall through to stock EditText handling.
+  - Findings 2+5: matcher rewritten to per-char locale-independent folding (`Character.toLowerCase`/`toUpperCase`, mirroring `String.regionMatches(ignoreCase)`); no whole-string normalization, so highlight indices always index the original candidate. New regression test runs under a forced `tr_TR` default locale.
+  - Finding 4: bump-timestamp assertion tightened to strict `>`.
+  - Validation re-run green: `:app:compileDebugJavaWithJavac :app:testDebugUnitTest`, 19 tests, 0 failures.
 
 ## Residual risks
 
-- (to be filled when findings are resolved or deferred)
+- Finding 3 (disputed, orchestrator position for round 2): worktree-side tasks.md checkbox flips are the schema's sanctioned progress-tracking mechanism — plan.md step 5 explicitly requires "worktree-side task checkoff", and the gate's tasks check reads those checkboxes from the worktree; task `files_allowed` contracts scope the IMPLEMENTATION surface of each task, not the checkoff bookkeeping that rides every opsx commit. Checkbox-flip diffs are text-otherwise-byte-identical (verified by the second round-1 reviewer, who judged the same pattern conforming). Round 2 blind reviewers adjudicate against the same baseline.
+- Findings 7–9 deferred as advisory (P3): spec-silent focus behavior on dismiss-without-pick, short-window footer clipping, and greedy-alignment ranking imperfection — none contract-violating; candidates for a follow-up change.
 
 ## Verdict rationale
 
