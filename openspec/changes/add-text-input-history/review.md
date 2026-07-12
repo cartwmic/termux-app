@@ -37,9 +37,9 @@ doneness_mode: required
 
 ## Diff Base + Worktree locator
 
-**Diff Base SHA:** <empty until apply captures it>
-**Worktree Path:** <empty until apply captures it>
-**Integration Branch:** <detected-at-capture>
+**Diff Base SHA:** 70a67e65e8ec7eb2b6685bdde2e5cdc1789c18e7
+**Worktree Path:** /Volumes/Workshop/git/termux-app--opsx-add-text-input-history
+**Integration Branch:** master
 
 ## Manual Adjustments
 
@@ -51,6 +51,8 @@ doneness_mode: required
 
 <!-- Transient observations appended during apply. One-line entries when a
 non-trivial decision is made mid-task. Durable knowledge → retrospective.md. -->
+
+- 2026-07-11 — worktree ensured via `opsx worktree ensure`; locator captured (Diff Base = master merge-base at creation).
 
 ## Scope Expansions
 
