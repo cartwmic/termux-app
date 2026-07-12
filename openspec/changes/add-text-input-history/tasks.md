@@ -63,7 +63,7 @@
   - files_allowed:
       - app/src/test/java/com/termux/app/terminal/io/TextInputHistoryNavigatorTest.java
   - allow_new_files: true
-- [ ] 4.4 Run the validation source: `./gradlew :app:compileDebugJavaWithJavac :app:testDebugUnitTest` green in the worktree.
+- [x] 4.4 Run the validation source: `./gradlew :app:compileDebugJavaWithJavac :app:testDebugUnitTest` green in the worktree.
   - intent: infra
   - files_allowed:
       - app/**
