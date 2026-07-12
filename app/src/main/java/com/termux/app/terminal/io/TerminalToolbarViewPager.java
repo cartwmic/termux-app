@@ -1,9 +1,15 @@
 package com.termux.app.terminal.io;
 
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.viewpager.widget.PagerAdapter;
@@ -91,7 +97,12 @@ public class TerminalToolbarViewPager {
             TerminalSession session = activity.getCurrentSession();
             if (session != null) {
                 if (session.isRunning()) {
-                    String textToSend = editText.getText().toString();
+                    String enteredText = editText.getText().toString();
+                    // Record the user-typed line (record() ignores empty text, so the
+                    // bare-"\r" empty send is never captured). Capture must not alter
+                    // the write semantics below.
+                    TextInputHistory.getInstance().record(enteredText);
+                    String textToSend = enteredText;
                     if (textToSend.length() == 0) textToSend = "\r";
                     session.write(textToSend);
                 } else {
@@ -99,6 +110,57 @@ public class TerminalToolbarViewPager {
                 }
                 editText.setText("");
             }
+            return true;
+        });
+
+        setupHistoryCycling(editText);
+    }
+
+    /**
+     * Wire readline-style hardware-keyboard Up/Down history cycling on the
+     * text-input box (spec terminal-toolbar.hardware-keyboard-history-cycling).
+     * Any key we do not consume returns false so stock EditText behavior is
+     * untouched; extra-key arrow buttons never pass through here — they write
+     * escape codes directly to the terminal session.
+     */
+    private static void setupHistoryCycling(final EditText editText) {
+        final TextInputHistoryNavigator navigator = new TextInputHistoryNavigator();
+        // Distinguishes navigator-driven setText calls from user edits.
+        final boolean[] programmaticSet = {false};
+
+        editText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (!programmaticSet[0]) navigator.onUserEdit();
+            }
+        });
+
+        editText.setOnKeyListener((v, keyCode, event) -> {
+            if (event.getAction() != KeyEvent.ACTION_DOWN) return false;
+            final String replacement;
+            if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
+                List<String> texts = new ArrayList<>();
+                for (TextInputHistory.Entry entry : TextInputHistory.getInstance().snapshot())
+                    texts.add(entry.text);
+                replacement = navigator.up(editText.getText().toString(), texts);
+            } else if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
+                replacement = navigator.down();
+            } else {
+                return false;
+            }
+            if (replacement == null) return navigator.isNavigating();
+            programmaticSet[0] = true;
+            editText.setText(replacement);
+            editText.setSelection(replacement.length());
+            programmaticSet[0] = false;
             return true;
         });
     }

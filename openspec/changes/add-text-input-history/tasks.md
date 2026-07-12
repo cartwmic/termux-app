@@ -15,12 +15,12 @@
 
 ## 2. Capture and hardware-keyboard cycling (shared wiring)
 
-- [ ] 2.1 Hook history capture into the shared send path in `TerminalToolbarViewPager.setupTextInputView`: record non-empty sent text before the box is cleared; empty sends (`\r`) are not recorded; send/clear/finished-session semantics unchanged (ACs terminal-toolbar.text-input-history-capture; domain invariants 1–2, 4).
+- [x] 2.1 Hook history capture into the shared send path in `TerminalToolbarViewPager.setupTextInputView`: record non-empty sent text before the box is cleared; empty sends (`\r`) are not recorded; send/clear/finished-session semantics unchanged (ACs terminal-toolbar.text-input-history-capture; domain invariants 1–2, 4).
   - intent: feature
   - files_allowed:
       - app/src/main/java/com/termux/app/terminal/io/TerminalToolbarViewPager.java
   - allow_new_files: false
-- [ ] 2.2 Add hardware Up/Down readline-style cycling on the focused text-input box: draft saved before first Up, restored when cycling past newest, typing resets the cycle, inert when history is empty; no change to extra-key handling (AC terminal-toolbar.hardware-keyboard-history-cycling).
+- [x] 2.2 Add hardware Up/Down readline-style cycling on the focused text-input box: draft saved before first Up, restored when cycling past newest, typing resets the cycle, inert when history is empty; no change to extra-key handling (AC terminal-toolbar.hardware-keyboard-history-cycling).
   - intent: feature
   - files_allowed:
       - app/src/main/java/com/termux/app/terminal/io/TerminalToolbarViewPager.java
