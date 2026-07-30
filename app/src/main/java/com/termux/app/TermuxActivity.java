@@ -291,10 +291,11 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         // app has been opened.
         TermuxUtils.sendTermuxOpenedBroadcast(this);
 
-        // notification-jump: handle a termux://zellij-jump/<pane-id> deep link
-        // delivered on a fresh launch. Foregrounding is inherent (this activity is
-        // being brought up); the handler dispatches the background jump command.
+        // notification-jump: handle Zellij or Herdr deep links delivered on a
+        // fresh launch. Foregrounding is inherent; the matching handler dispatches
+        // its background jump command while the other safely no-ops.
         ZellijJumpHandler.handle(this, getIntent());
+        HerdrJumpHandler.handle(this, getIntent());
     }
 
     @Override
@@ -305,6 +306,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         // single live session and dispatch the background jump.
         setIntent(intent);
         ZellijJumpHandler.handle(this, intent);
+        HerdrJumpHandler.handle(this, intent);
     }
 
     @Override
