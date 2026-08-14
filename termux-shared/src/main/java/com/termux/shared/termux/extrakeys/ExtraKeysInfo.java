@@ -46,7 +46,7 @@ import org.json.JSONObject;
  *
  * # 2 row:
  * [['ESC','/',{key: '-', popup: '|'},'HOME','UP','END','PGUP'],
- * ['TAB','CTRL','ALT','LEFT','DOWN','RIGHT','PGDN']]
+ * ['TAB','CTRL','ALT','SHIFT','LEFT','DOWN','RIGHT','PGDN']]
  *
  * # Advance:
  * [[
