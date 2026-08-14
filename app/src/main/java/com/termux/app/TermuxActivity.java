@@ -52,6 +52,7 @@ import com.termux.shared.termux.interact.TextInputDialogUtils;
 import com.termux.shared.logger.Logger;
 import com.termux.shared.termux.TermuxUtils;
 import com.termux.shared.termux.settings.properties.TermuxAppSharedProperties;
+import com.termux.shared.termux.shell.command.runner.terminal.TermuxSession;
 import com.termux.shared.termux.theme.TermuxThemeUtils;
 import com.termux.shared.theme.NightMode;
 import com.termux.shared.view.ViewUtils;
@@ -303,10 +304,15 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         super.onNewIntent(intent);
         // notification-jump: an already-running (singleTask) activity receives the
         // deep link here rather than spawning a second instance. Preserve the
-        // single live session and dispatch the background jump.
+        // single live session and dispatch the background jump. Session focus
+        // runs after the handlers, and only once TermuxService is bound — the
+        // session list is not available from onCreate.
         setIntent(intent);
         ZellijJumpHandler.handle(this, intent);
         HerdrJumpHandler.handle(this, intent);
+        if (mTermuxService != null) {
+            applyJumpSessionFocus(intent);
+        }
     }
 
     @Override
@@ -455,8 +461,60 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
             }
         }
 
+        // Jump session focus needs the bound session list, after last-session
+        // restore. Do not do this in onCreate: sessions are not available until
+        // the service is connected. Use the captured launch intent — getIntent()
+        // was already cleared above.
+        applyJumpSessionFocus(intent);
+
         // Update the {@link TerminalSession} and {@link TerminalEmulator} clients.
         mTermuxService.setTermuxTerminalSessionClient(mTermuxTerminalSessionActivityClient);
+    }
+
+    /**
+     * If {@code intent} is a jump deep link with a grammar-valid {@code host}
+     * query, make the first existing session whose {@link TerminalSession#mSessionName}
+     * equals that host the current session. A miss leaves the current session.
+     * Does not create, rename, or type into sessions. No SSH hostnames or
+     * allowlist live here — only exact name equality on a grammar-checked string.
+     */
+    private void applyJumpSessionFocus(Intent intent) {
+        if (intent == null || mTermuxService == null || mTermuxTerminalSessionActivityClient == null) {
+            return;
+        }
+        Uri data = intent.getData();
+        String uriString = data == null ? null : data.toString();
+        String host = HerdrJumpHandler.extractHost(uriString);
+        if (host == null) {
+            host = ZellijJumpHandler.extractHost(uriString);
+        }
+        if (host == null) {
+            return;
+        }
+
+        int size = mTermuxService.getTermuxSessionsSize();
+        String[] names = new String[size];
+        for (int i = 0; i < size; i++) {
+            TermuxSession termuxSession = mTermuxService.getTermuxSession(i);
+            TerminalSession terminalSession = termuxSession == null ? null : termuxSession.getTerminalSession();
+            names[i] = terminalSession == null ? null : terminalSession.mSessionName;
+        }
+        int index = JumpHost.indexOfFirstNamed(names, host);
+        if (index < 0) {
+            return;
+        }
+        TermuxSession match = mTermuxService.getTermuxSession(index);
+        if (match == null) {
+            return;
+        }
+        TerminalSession session = match.getTerminalSession();
+        if (session == null) {
+            return;
+        }
+        mTermuxTerminalSessionActivityClient.setCurrentSession(session);
+        // Persist so a later onStart restore of the stored session does not
+        // undo the jump focus.
+        mTermuxTerminalSessionActivityClient.setCurrentStoredSession();
     }
 
     @Override

@@ -19,9 +19,9 @@ import java.io.File;
  * spawning a new visible Termux session. Foregrounding the terminal is inherent
  * to the VIEW intent bringing {@link TermuxActivity} up.
  *
- * The ssh target, remote host, and {@code zellij pipe} invocation live entirely
+ * The ssh target, destination machine, and {@code zellij pipe} invocation live entirely
  * in the user-space script — this fork carries no hosts or secrets (only the
- * pane id is passed through).
+ * pane id, and when present a grammar-checked host string, are passed through).
  */
 public final class ZellijJumpHandler {
 
@@ -63,6 +63,22 @@ public final class ZellijJumpHandler {
     }
 
     /**
+     * Extract a {@code host} query value only when it matches the frozen alias
+     * grammar. Invalid or absent host returns {@code null} and does not block
+     * path-id dispatch.
+     */
+    static String extractHost(String uriString) {
+        return JumpHost.extractHost(uriString, JUMP_URI_PREFIX);
+    }
+
+    /**
+     * EXTRA_ARGUMENTS for {@code ~/bin/zellij-jump}: {@code [id]} or {@code [id, host]}.
+     */
+    static String[] extraArguments(String pathId, String host) {
+        return JumpHost.extraArguments(pathId, host);
+    }
+
+    /**
      * Handle a jump intent: when it carries a non-empty pane id and the jump
      * script exists, dispatch the background command. Missing pane id or missing
      * script degrade to a no-op (activity is still foregrounded by the caller).
@@ -72,7 +88,8 @@ public final class ZellijJumpHandler {
         if (context == null || intent == null) return;
 
         Uri data = intent.getData();
-        String paneId = extractPaneId(data == null ? null : data.toString());
+        String uriString = data == null ? null : data.toString();
+        String paneId = extractPaneId(uriString);
         if (paneId == null) {
             // Not a jump deep link, or no pane id — foreground only.
             return;
@@ -92,7 +109,7 @@ public final class ZellijJumpHandler {
             Uri executableUri = new Uri.Builder().scheme("file").path(JUMP_SCRIPT_PATH).build();
             Intent exec = new Intent(TERMUX_SERVICE.ACTION_SERVICE_EXECUTE, executableUri);
             exec.setClass(context, TermuxService.class);
-            exec.putExtra(TERMUX_SERVICE.EXTRA_ARGUMENTS, new String[]{paneId});
+            exec.putExtra(TERMUX_SERVICE.EXTRA_ARGUMENTS, extraArguments(paneId, extractHost(uriString)));
             exec.putExtra(TERMUX_SERVICE.EXTRA_BACKGROUND, true);
             context.startService(exec);
             Logger.logDebug(LOG_TAG, "zellij-jump dispatched for pane " + paneId);

@@ -16,7 +16,7 @@ import java.io.File;
  * The stable Herdr terminal id is passed to a user-owned background script.
  * That script owns SSH routing and resolves the terminal to its current pane
  * immediately before calling {@code herdr agent focus}. This fork carries no
- * remote hosts, credentials, workspace ids, or pane ids.
+ * hosts, credentials, workspace ids, or pane ids.
  */
 public final class HerdrJumpHandler {
 
@@ -45,12 +45,29 @@ public final class HerdrJumpHandler {
         return terminalId.matches("term_[0-9a-f]+") ? terminalId : null;
     }
 
+    /**
+     * Extract a {@code host} query value only when it matches the frozen alias
+     * grammar. Invalid or absent host returns {@code null} and does not block
+     * path-id dispatch.
+     */
+    static String extractHost(String uriString) {
+        return JumpHost.extractHost(uriString, JUMP_URI_PREFIX);
+    }
+
+    /**
+     * EXTRA_ARGUMENTS for {@code ~/bin/herdr-jump}: {@code [id]} or {@code [id, host]}.
+     */
+    static String[] extraArguments(String pathId, String host) {
+        return JumpHost.extraArguments(pathId, host);
+    }
+
     /** Dispatch the user-space jump script as a background Termux command. */
     static void handle(Context context, Intent intent) {
         if (context == null || intent == null) return;
 
         Uri data = intent.getData();
-        String terminalId = extractTerminalId(data == null ? null : data.toString());
+        String uriString = data == null ? null : data.toString();
+        String terminalId = extractTerminalId(uriString);
         if (terminalId == null) return;
 
         if (!new File(JUMP_SCRIPT_PATH).exists()) {
@@ -62,7 +79,7 @@ public final class HerdrJumpHandler {
             Uri executableUri = new Uri.Builder().scheme("file").path(JUMP_SCRIPT_PATH).build();
             Intent exec = new Intent(TERMUX_SERVICE.ACTION_SERVICE_EXECUTE, executableUri);
             exec.setClass(context, TermuxService.class);
-            exec.putExtra(TERMUX_SERVICE.EXTRA_ARGUMENTS, new String[]{terminalId});
+            exec.putExtra(TERMUX_SERVICE.EXTRA_ARGUMENTS, extraArguments(terminalId, extractHost(uriString)));
             exec.putExtra(TERMUX_SERVICE.EXTRA_BACKGROUND, true);
             context.startService(exec);
             Logger.logDebug(LOG_TAG, "herdr-jump dispatched for terminal " + terminalId);
