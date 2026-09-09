@@ -684,6 +684,10 @@ public abstract class TermuxSharedProperties {
         return (boolean) TermuxPropertyConstants.IVALUE_SOFT_KEYBOARD_TOGGLE_BEHAVIOUR_ENABLE_DISABLE.equals(getInternalPropertyValue(TermuxPropertyConstants.KEY_SOFT_KEYBOARD_TOGGLE_BEHAVIOUR, true));
     }
 
+    public boolean shouldVolumeKeysSwitchSessions() {
+        return TermuxPropertyConstants.IVALUE_VOLUME_KEY_BEHAVIOUR_SESSIONS.equals(getInternalPropertyValue(TermuxPropertyConstants.KEY_VOLUME_KEYS_BEHAVIOUR, true));
+    }
+
     public boolean areVirtualVolumeKeysDisabled() {
         return (boolean) TermuxPropertyConstants.IVALUE_VOLUME_KEY_BEHAVIOUR_VOLUME.equals(getInternalPropertyValue(TermuxPropertyConstants.KEY_VOLUME_KEYS_BEHAVIOUR, true));
     }

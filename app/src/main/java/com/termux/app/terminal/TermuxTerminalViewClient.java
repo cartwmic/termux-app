@@ -137,6 +137,7 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
      * Should be called when mActivity.reloadProperties() is called
      */
     public void onReloadProperties() {
+        mVirtualControlKeyDown = mVirtualFnKeyDown = false;
         setSessionShortcuts();
     }
 
@@ -300,14 +301,21 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
         return handleVirtualKeys(keyCode, e, false);
     }
 
-    /** Handle dedicated volume buttons as virtual keys if applicable. */
+    /** Handle dedicated volume buttons as modifiers or session navigation. */
     private boolean handleVirtualKeys(int keyCode, KeyEvent event, boolean down) {
+        if (keyCode != KeyEvent.KEYCODE_VOLUME_DOWN && keyCode != KeyEvent.KEYCODE_VOLUME_UP)
+            return false;
         InputDevice inputDevice = event.getDevice();
         if (mActivity.getProperties().areVirtualVolumeKeysDisabled()) {
             return false;
         } else if (inputDevice != null && inputDevice.getKeyboardType() == InputDevice.KEYBOARD_TYPE_ALPHABETIC) {
             // Do not steal dedicated buttons from a full external keyboard.
             return false;
+        } else if (mActivity.getProperties().shouldVolumeKeysSwitchSessions()) {
+            // Consume releases and repeats too, but switch only once per press.
+            if (down && event.getRepeatCount() == 0)
+                mTermuxTerminalSessionActivityClient.switchToSession(keyCode == KeyEvent.KEYCODE_VOLUME_DOWN);
+            return true;
         } else if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
             mVirtualControlKeyDown = down;
             return true;

@@ -375,11 +375,12 @@ public final class TermuxPropertyConstants {
 
 
 
-    /** Defines the key for whether volume keys will behave as virtual or literal volume keys */
+    /** Defines whether volume keys act as modifiers, volume controls, or session navigation. */
     public static final String KEY_VOLUME_KEYS_BEHAVIOUR =  "volume-keys"; // Default: "volume-keys"
 
     public static final String IVALUE_VOLUME_KEY_BEHAVIOUR_VIRTUAL = "virtual";
     public static final String IVALUE_VOLUME_KEY_BEHAVIOUR_VOLUME = "volume";
+    public static final String IVALUE_VOLUME_KEY_BEHAVIOUR_SESSIONS = "sessions";
     public static final String DEFAULT_IVALUE_VOLUME_KEYS_BEHAVIOUR = IVALUE_VOLUME_KEY_BEHAVIOUR_VIRTUAL;
 
     /** Defines the bidirectional map for volume keys behaviour values and their internal values */
@@ -387,6 +388,7 @@ public final class TermuxPropertyConstants {
         new ImmutableBiMap.Builder<String, String>()
             .put(IVALUE_VOLUME_KEY_BEHAVIOUR_VIRTUAL, IVALUE_VOLUME_KEY_BEHAVIOUR_VIRTUAL)
             .put(IVALUE_VOLUME_KEY_BEHAVIOUR_VOLUME, IVALUE_VOLUME_KEY_BEHAVIOUR_VOLUME)
+            .put(IVALUE_VOLUME_KEY_BEHAVIOUR_SESSIONS, IVALUE_VOLUME_KEY_BEHAVIOUR_SESSIONS)
             .build();
 
 

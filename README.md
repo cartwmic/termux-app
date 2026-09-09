@@ -21,6 +21,24 @@ Quick how-to about Termux package management is available at [Package Management
 
 ***
 
+## Fork: volume-button session switching
+
+In `~/.termux/termux.properties`, set `volume-keys = sessions` to make Volume Up
+select the previous Termux session and Volume Down select the next. Each press
+switches once, wrapping at the ends; holding a button does not repeat. This mode
+replaces the volume buttons' Ctrl/Fn modifiers, but on-screen Ctrl shortcuts still
+work. Volume buttons on alphabetic external keyboards retain their normal behavior.
+
+Use `volume-keys = virtual` to restore the default Ctrl/Fn modifiers, or
+`volume-keys = volume` for Android volume control. After changing the setting, run
+`termux-reload-settings` in a local shell **while Termux is visible**; reload
+broadcasts received while the app is in the background are ignored.
+
+Tests: `./gradlew test`. For an installed APK on a disposable, bootstrapped ARM64
+Android 14 emulator, run `ANDROID_HOME=<sdk> python3 app/src/test/volume-session-keys-e2e.py emulator-5554`.
+The script restarts Termux and drives dedicated volume-key events through Android
+into real local shells. Requirements are listed in the script.
+
 ## Contents
 - [Termux App and Plugins](#termux-app-and-plugins)
 - [Installation](#installation)
