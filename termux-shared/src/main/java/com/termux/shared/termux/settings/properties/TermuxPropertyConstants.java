@@ -265,6 +265,9 @@ public final class TermuxPropertyConstants {
     public static final float IVALUE_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR_MAX = 3;
     public static final float DEFAULT_IVALUE_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR = 1;
 
+    /** Overrides the extra-keys row height in stacked mode; absent means terminal-toolbar-height. */
+    public static final String KEY_TERMINAL_TOOLBAR_EXTRA_KEYS_HEIGHT_SCALE_FACTOR = "terminal-toolbar-extra-keys-height";
+
 
 
 
@@ -426,6 +429,7 @@ public final class TermuxPropertyConstants {
 
         /* float */
         KEY_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR,
+        KEY_TERMINAL_TOOLBAR_EXTRA_KEYS_HEIGHT_SCALE_FACTOR,
 
         /* Integer */
         KEY_SHORTCUT_CREATE_SESSION,

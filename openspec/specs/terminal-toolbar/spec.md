@@ -37,11 +37,19 @@ When stacked mode is active, the system SHALL render both the extra-keys row and
 
 ### Requirement: Toolbar height accounts for both components in stacked mode
 
-In stacked mode the system SHALL size the toolbar to fit the extra-keys rows plus one text-input row, scaled by the `terminal-toolbar-height` factor. When the extra-keys set is empty (e.g. `extra-keys-style=none`), the toolbar SHALL still allocate height for the text-input box.
+In stacked mode the system SHALL size the toolbar to fit the extra-keys rows plus one text-input row. Both SHALL use the `terminal-toolbar-height` factor by default. When `terminal-toolbar-extra-keys-height` is set, only the extra-keys rows SHALL use that factor; the text-input row SHALL continue to use `terminal-toolbar-height`. The override SHALL NOT affect legacy paged mode. When the extra-keys set is empty (e.g. `extra-keys-style=none`), the toolbar SHALL still allocate height for the text-input box.
 
 #### Scenario: Height fits multi-row extra keys plus text box
 - **WHEN** stacked mode is active and `extra-keys` defines two rows
 - **THEN** the toolbar height fits two extra-key rows plus one text-input row, scaled by `terminal-toolbar-height`
+
+#### Scenario: Independent extra-keys height
+- **WHEN** stacked mode is active with two extra-keys rows, `terminal-toolbar-height=1`, and `terminal-toolbar-extra-keys-height=0.70`
+- **THEN** each extra-keys row is 70% of its default height while the text-input row retains its default height
+
+#### Scenario: Paged mode ignores the extra-keys override
+- **WHEN** stacked mode is disabled and `terminal-toolbar-extra-keys-height` is set
+- **THEN** the legacy toolbar height remains governed by `terminal-toolbar-height`
 
 #### Scenario: Text box still shown when extra keys are empty
 - **WHEN** stacked mode is active and the extra-keys set resolves to zero rows

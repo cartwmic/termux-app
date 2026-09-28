@@ -277,6 +277,8 @@ public abstract class TermuxSharedProperties {
             /* float */
             case TermuxPropertyConstants.KEY_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR:
                 return (float) getTerminalToolbarHeightScaleFactorInternalPropertyValueFromValue(value);
+            case TermuxPropertyConstants.KEY_TERMINAL_TOOLBAR_EXTRA_KEYS_HEIGHT_SCALE_FACTOR:
+                return (float) getTerminalToolbarExtraKeysHeightScaleFactorInternalPropertyValueFromValue(value);
 
             /* Integer (may be null) */
             case TermuxPropertyConstants.KEY_SHORTCUT_CREATE_SESSION:
@@ -449,6 +451,15 @@ public abstract class TermuxSharedProperties {
      */
     public static float getTerminalToolbarHeightScaleFactorInternalPropertyValueFromValue(String value) {
         return SharedProperties.getDefaultIfNotInRange(TermuxPropertyConstants.KEY_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR,
+            DataUtils.getFloatFromString(value, TermuxPropertyConstants.DEFAULT_IVALUE_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR),
+            TermuxPropertyConstants.DEFAULT_IVALUE_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR,
+            TermuxPropertyConstants.IVALUE_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR_MIN,
+            TermuxPropertyConstants.IVALUE_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR_MAX,
+            true, true, LOG_TAG);
+    }
+
+    public static float getTerminalToolbarExtraKeysHeightScaleFactorInternalPropertyValueFromValue(String value) {
+        return SharedProperties.getDefaultIfNotInRange(TermuxPropertyConstants.KEY_TERMINAL_TOOLBAR_EXTRA_KEYS_HEIGHT_SCALE_FACTOR,
             DataUtils.getFloatFromString(value, TermuxPropertyConstants.DEFAULT_IVALUE_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR),
             TermuxPropertyConstants.DEFAULT_IVALUE_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR,
             TermuxPropertyConstants.IVALUE_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR_MIN,
@@ -656,6 +667,13 @@ public abstract class TermuxSharedProperties {
 
     public float getTerminalToolbarHeightScaleFactor() {
         return (float) getInternalPropertyValue(TermuxPropertyConstants.KEY_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR, true);
+    }
+
+    public float getTerminalToolbarExtraKeysHeightScaleFactor() {
+        String key = TermuxPropertyConstants.KEY_TERMINAL_TOOLBAR_EXTRA_KEYS_HEIGHT_SCALE_FACTOR;
+        return getPropertyValue(key, null, true) == null
+            ? getTerminalToolbarHeightScaleFactor()
+            : (float) getInternalPropertyValue(key, true);
     }
 
     public boolean isTerminalToolbarStacked() {
