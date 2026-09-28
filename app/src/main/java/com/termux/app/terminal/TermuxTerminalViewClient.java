@@ -554,9 +554,9 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
                 if(mShowSoftKeyboardWithDelayOnce) {
                     mShowSoftKeyboardWithDelayOnce = false;
                     mActivity.getTerminalView().postDelayed(getShowSoftKeyboardRunnable(), 500);
-                    mActivity.getTerminalView().requestFocus();
+                    getSoftKeyboardTargetView().requestFocus();
                 } else
-                    KeyboardUtils.showSoftKeyboard(mActivity, mActivity.getTerminalView());
+                    KeyboardUtils.showSoftKeyboard(mActivity, getSoftKeyboardTargetView());
             }
         }
         // If soft keyboard toggle behaviour is show/hide
@@ -653,10 +653,15 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
         }
     }
 
+    private View getSoftKeyboardTargetView() {
+        EditText textInputView = mActivity.findViewById(R.id.terminal_toolbar_text_input);
+        return textInputView != null && textInputView.hasFocus() ? textInputView : mActivity.getTerminalView();
+    }
+
     private Runnable getShowSoftKeyboardRunnable() {
         if (mShowSoftKeyboardRunnable == null) {
             mShowSoftKeyboardRunnable = () -> {
-                KeyboardUtils.showSoftKeyboard(mActivity, mActivity.getTerminalView());
+                KeyboardUtils.showSoftKeyboard(mActivity, getSoftKeyboardTargetView());
             };
         }
         return mShowSoftKeyboardRunnable;

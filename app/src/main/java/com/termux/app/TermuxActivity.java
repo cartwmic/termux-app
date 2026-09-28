@@ -662,11 +662,12 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
             final View stacked = findViewById(R.id.terminal_toolbar_stacked);
             if (stacked == null) return;
 
-            final int unit = Math.round(mTerminalToolbarDefaultHeight * scale);
+            final int extraKeysUnit = Math.round(mTerminalToolbarDefaultHeight * mProperties.getTerminalToolbarExtraKeysHeightScaleFactor());
+            final int textInputUnit = Math.round(mTerminalToolbarDefaultHeight * scale);
 
             ExtraKeysView extraKeysView = stacked.findViewById(R.id.terminal_toolbar_extra_keys);
             ViewGroup.LayoutParams ekLayoutParams = extraKeysView.getLayoutParams();
-            ekLayoutParams.height = unit * rows;
+            ekLayoutParams.height = extraKeysUnit * rows;
             extraKeysView.setLayoutParams(ekLayoutParams);
             // Hide the extra keys row entirely when there are no rows (e.g. extra-keys-style=none),
             // but still show the text input box below.
@@ -674,7 +675,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
             EditText editText = stacked.findViewById(R.id.terminal_toolbar_text_input);
             ViewGroup.LayoutParams tiLayoutParams = editText.getLayoutParams();
-            tiLayoutParams.height = unit;
+            tiLayoutParams.height = textInputUnit;
             editText.setLayoutParams(tiLayoutParams);
             return;
         }
