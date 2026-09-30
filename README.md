@@ -39,6 +39,14 @@ Android 14 emulator, run `ANDROID_HOME=<sdk> python3 app/src/test/volume-session
 The script restarts Termux and drives dedicated volume-key events through Android
 into real local shells. Requirements are listed in the script.
 
+## Fork: indexed color queries
+
+OSC 4 palette queries (`ESC ] 4 ; index ; ?`) report the current color for
+indices 0–255, including colors configured in `~/.termux/colors.properties`.
+Replies use `rgb:RRRR/GGGG/BBBB` and preserve the request's BEL or ST terminator.
+Queries do not change the palette or emit color-change events. This lets Herdr
+and Pi's System theme inherit the actual terminal palette.
+
 ## Contents
 - [Termux App and Plugins](#termux-app-and-plugins)
 - [Installation](#installation)

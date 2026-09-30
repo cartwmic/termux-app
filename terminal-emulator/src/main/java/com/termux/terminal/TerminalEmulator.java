@@ -2055,8 +2055,18 @@ public final class TerminalEmulator {
                                 unknownSequence(b);
                                 return;
                             } else {
-                                mColors.tryParseColor(colorIndex, textParameter.substring(parsingPairStart, i));
-                                mSession.onColorsChanged();
+                                String colorSpec = textParameter.substring(parsingPairStart, i);
+                                if ("?".equals(colorSpec)) {
+                                    int rgb = mColors.mCurrentColors[colorIndex];
+                                    int red = ((rgb >> 16) & 0xFF) * 257;
+                                    int green = ((rgb >> 8) & 0xFF) * 257;
+                                    int blue = (rgb & 0xFF) * 257;
+                                    mSession.write(String.format(Locale.US, "\033]4;%d;rgb:%04x/%04x/%04x",
+                                        colorIndex, red, green, blue) + bellOrStringTerminator);
+                                } else {
+                                    mColors.tryParseColor(colorIndex, colorSpec);
+                                    mSession.onColorsChanged();
+                                }
                                 colorIndex = -1;
                                 parsingPairStart = -1;
                             }

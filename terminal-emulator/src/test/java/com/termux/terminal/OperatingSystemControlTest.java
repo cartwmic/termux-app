@@ -4,6 +4,7 @@ import android.util.Base64;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Random;
 
 /** "ESC ]" is the Operating System Command. */
@@ -98,6 +99,61 @@ public class OperatingSystemControlTest extends TerminalTestCase {
 		enterString("\033]4;7;#00FF00;8;#0000FF\007");
 		assertEquals(mTerminal.mColors.mCurrentColors[7], 0xFF00FF00);
 		assertEquals(mTerminal.mColors.mCurrentColors[8], 0xFF0000FF);
+	}
+
+	public void testReportPaletteColorsWithBothTerminators() {
+		withTerminalSized(3, 3).enterString("\033]4;5;#ABCD00\007");
+		int changes = mOutput.colorsChanged;
+		assertEnteringStringGivesResponse("\033]4;5;?\007", "\033]4;5;rgb:abab/cdcd/0000\007");
+		assertEnteringStringGivesResponse("\033]4;5;?\033\\", "\033]4;5;rgb:abab/cdcd/0000\033\\");
+		assertColor(5, 0xFFABCD00);
+		assertEquals(changes, mOutput.colorsChanged);
+	}
+
+	public void testReportPaletteColorsAtBothEdges() {
+		withTerminalSized(3, 3).enterString("\033]4;0;#012345;255;#FEDCBA\007");
+		assertEnteringStringGivesResponse("\033]4;0;?;255;?\007",
+			"\033]4;0;rgb:0101/2323/4545\007\033]4;255;rgb:fefe/dcdc/baba\007");
+	}
+
+	public void testMixedPaletteUpdatesAndQueries() {
+		withTerminalSized(3, 3);
+		int changes = mOutput.colorsChanged;
+		assertEnteringStringGivesResponse("\033]4;1;#ABCDEF;1;?;2;#012345;2;?\033\\",
+			"\033]4;1;rgb:abab/cdcd/efef\033\\\033]4;2;rgb:0101/2323/4545\033\\");
+		assertColor(1, 0xFFABCDEF).assertColor(2, 0xFF012345);
+		assertEquals(changes + 2, mOutput.colorsChanged);
+	}
+
+	public void testReportPaletteQueryBurstDoesNotChangeColors() {
+		withTerminalSized(3, 3);
+		int[] before = mTerminal.mColors.mCurrentColors.clone();
+		int changes = mOutput.colorsChanged;
+		StringBuilder queries = new StringBuilder();
+		StringBuilder expected = new StringBuilder();
+		for (int index = 0; index < 256; index++) {
+			queries.append("\033]4;").append(index).append(";?\007");
+			int color = before[index];
+			expected.append(String.format(Locale.US, "\033]4;%d;rgb:%04x/%04x/%04x\007", index,
+				((color >> 16) & 0xFF) * 257, ((color >> 8) & 0xFF) * 257, (color & 0xFF) * 257));
+		}
+		assertEnteringStringGivesResponse(queries.toString(), expected.toString());
+		for (int index = 0; index < before.length; index++) assertColor(index, before[index]);
+		assertEquals(changes, mOutput.colorsChanged);
+	}
+
+	public void testReportPaletteColorAfterReset() {
+		withTerminalSized(3, 3).enterString("\033]4;5;#012345\007");
+		enterString("\033]104;5\007");
+		assertEnteringStringGivesResponse("\033]4;5;?\007", "\033]4;5;rgb:cdcd/0000/cdcd\007");
+	}
+
+	public void testRejectOutOfRangePaletteQueries() {
+		withTerminalSized(3, 3);
+		int changes = mOutput.colorsChanged;
+		assertEnteringStringGivesResponse("\033]4;-1;?\007", "");
+		assertEnteringStringGivesResponse("\033]4;256;?\033\\", "");
+		assertEquals(changes, mOutput.colorsChanged);
 	}
 
 	void assertIndexColorsMatch(int[] expected) {
