@@ -2,6 +2,9 @@ package com.termux.shared.termux.extrakeys;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
@@ -180,6 +183,12 @@ public final class ExtraKeysView extends GridLayout {
     /** Defines whether text for the extra keys button should be all capitalized automatically. */
     protected boolean mButtonTextAllCaps = true;
 
+    /** Defines whether faint borders are drawn between the extra keys buttons. */
+    protected boolean mButtonBorder = false;
+
+    /** Paint for {@link #mButtonBorder} dividers, derived from {@link #mButtonTextColor}. */
+    private final Paint mButtonBorderPaint = new Paint();
+
 
     /**
      * Defines the duration in milliseconds before a press turns into a long press. The default
@@ -330,6 +339,40 @@ public final class ExtraKeysView extends GridLayout {
     /** Set {@link #mButtonTextAllCaps}. */
     public void setButtonTextAllCaps(boolean buttonTextAllCaps) {
         mButtonTextAllCaps = buttonTextAllCaps;
+    }
+
+    /** Set {@link #mButtonBorder}. */
+    public void setButtonBorder(boolean buttonBorder) {
+        mButtonBorder = buttonBorder;
+        invalidate();
+    }
+
+    /** Draw faint dividers between buttons: right edge unless last column, bottom edge unless last row. */
+    @Override
+    protected void dispatchDraw(Canvas canvas) {
+        super.dispatchDraw(canvas);
+        if (!mButtonBorder) return;
+
+        float stroke = Math.max(1f, getResources().getDisplayMetrics().density);
+        mButtonBorderPaint.setColor(Color.argb(0x40, Color.red(mButtonTextColor),
+            Color.green(mButtonTextColor), Color.blue(mButtonTextColor)));
+        mButtonBorderPaint.setStrokeWidth(stroke);
+
+        int right = getWidth() - getPaddingRight() - 1;
+        int bottom = getHeight() - getPaddingBottom() - 1;
+        float half = stroke / 2f;
+        for (int i = 0; i < getChildCount(); i++) {
+            View child = getChildAt(i);
+            if (child.getVisibility() != VISIBLE) continue;
+            if (child.getRight() < right) {
+                float x = child.getRight() - half;
+                canvas.drawLine(x, child.getTop(), x, child.getBottom(), mButtonBorderPaint);
+            }
+            if (child.getBottom() < bottom) {
+                float y = child.getBottom() - half;
+                canvas.drawLine(child.getLeft(), y, child.getRight(), y, mButtonBorderPaint);
+            }
+        }
     }
 
 

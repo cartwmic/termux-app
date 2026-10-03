@@ -55,6 +55,18 @@ In stacked mode the system SHALL size the toolbar to fit the extra-keys rows plu
 - **WHEN** stacked mode is active and the extra-keys set resolves to zero rows
 - **THEN** the toolbar still displays the text-input box with a height of one row
 
+### Requirement: Optional extra-key borders
+
+When `extra-keys-border=true`, the system SHALL draw faint dividers between adjacent extra-key buttons, tinted from the button text colour at low opacity. When the property is absent or false, no dividers SHALL be drawn. The setting SHALL apply on settings reload and SHALL NOT change button touch or popup behaviour.
+
+#### Scenario: Borders enabled
+- **WHEN** `extra-keys-border=true` and settings are reloaded
+- **THEN** a faint line separates each pair of adjacent extra keys, with none on the outer edges
+
+#### Scenario: Borders disabled by default
+- **WHEN** `extra-keys-border` is absent
+- **THEN** the extra keys render without dividers, as before
+
 ### Requirement: Show/hide toggle applies to stacked toolbar
 
 The existing toolbar show/hide controls (drawer keyboard long-press, `Vol-Up`+`K`, fn-`q`/`k`) SHALL show or hide the entire toolbar in stacked mode, governed by the same `show_extra_keys` preference used in legacy mode.

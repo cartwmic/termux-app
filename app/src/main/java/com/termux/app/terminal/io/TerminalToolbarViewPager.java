@@ -76,6 +76,7 @@ public class TerminalToolbarViewPager {
     public static void setupExtraKeysView(TermuxActivity activity, ExtraKeysView extraKeysView) {
         extraKeysView.setExtraKeysViewClient(activity.getTermuxTerminalExtraKeys());
         extraKeysView.setButtonTextAllCaps(activity.getProperties().shouldExtraKeysTextBeAllCaps());
+        extraKeysView.setButtonBorder(activity.getProperties().shouldExtraKeysHaveBorder());
         activity.setExtraKeysView(extraKeysView);
         extraKeysView.reload(activity.getTermuxTerminalExtraKeys().getExtraKeysInfo(),
             activity.getTerminalToolbarDefaultHeight());
